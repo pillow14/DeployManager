@@ -1,16 +1,7 @@
-import { createContext, useContext, useState, useCallback, type ReactNode } from 'react'
+import { useState, useCallback, type ReactNode } from 'react'
 import { authApi } from '@/shared/api/auth'
 import type { AuthUser } from '@/shared/types/auth'
-
-interface AuthContextType {
-  user: AuthUser | null
-  isAuthenticated: boolean
-  login: (token: string, refreshToken: string, username: string, role: string) => void
-  logout: () => Promise<void>
-  updateUser: (user: AuthUser) => void
-}
-
-const AuthContext = createContext<AuthContextType | null>(null)
+import { AuthContext } from '@/providers/AuthContext'
 
 function getStoredUser(): AuthUser | null {
   try {
@@ -50,10 +41,4 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       {children}
     </AuthContext.Provider>
   )
-}
-
-export function useAuth(): AuthContextType {
-  const context = useContext(AuthContext)
-  if (!context) throw new Error('useAuth must be used within an AuthProvider')
-  return context
 }

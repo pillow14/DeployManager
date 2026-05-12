@@ -1,11 +1,11 @@
-import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useNavigate } from 'react-router-dom'
 import { AxiosError } from 'axios'
+import Swal from 'sweetalert2'
 import { useLogin } from '@/shared/hooks/useAuth'
-import { useAuth } from '@/providers/AuthProvider'
+import { useAuth } from '@/providers/useAuth'
 import { Button } from '@/shared/components/Button'
 import { Input } from '@/shared/components/Input'
 
@@ -20,7 +20,6 @@ export function LoginPage() {
   const navigate = useNavigate()
   const loginMutation = useLogin()
   const { login } = useAuth()
-  const [serverError, setServerError] = useState<string | null>(null)
 
   const {
     register,
@@ -32,15 +31,36 @@ export function LoginPage() {
 
   const onSubmit = async (data: LoginForm) => {
     try {
-      setServerError(null)
       const response = await loginMutation.mutateAsync(data)
       login(response.token, response.refreshToken, response.username, response.role)
+      await Swal.fire({
+        icon: 'success',
+        title: 'Inicio de sesión exitoso',
+        timer: 1500,
+        showConfirmButton: false,
+      })
       navigate('/dashboard')
     } catch (err) {
-      if (err instanceof AxiosError && err.response?.data?.error) {
-        setServerError(err.response.data.error)
+      if (err instanceof AxiosError) {
+        if (err.response) {
+          await Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Usuario o contraseña incorrectos',
+          })
+        } else {
+          await Swal.fire({
+            icon: 'error',
+            title: 'Error de conexión',
+            text: 'No fue posible conectar con el servidor. Intente nuevamente.',
+          })
+        }
       } else {
-        setServerError('An unexpected error occurred. Please try again.')
+        await Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Ocurrió un error inesperado. Intente nuevamente.',
+        })
       }
     }
   }
@@ -62,11 +82,8 @@ export function LoginPage() {
         error={errors.password?.message}
         {...register('password')}
       />
-      {serverError && (
-        <p className="text-sm text-red-600" role="alert">{serverError}</p>
-      )}
       <Button type="submit" className="w-full" isLoading={loginMutation.isPending}>
-        Sign In
+        {loginMutation.isPending ? 'Ingresando...' : 'Sign In'}
       </Button>
     </form>
   )

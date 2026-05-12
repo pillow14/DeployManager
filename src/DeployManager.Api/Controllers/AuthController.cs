@@ -32,7 +32,9 @@ public class AuthController(ISender mediator) : BaseApiController(mediator)
     [HttpPost("revoke")]
     public async Task<IActionResult> Revoke(CancellationToken cancellationToken)
     {
-        var userId = Guid.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)!.Value);
+        var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        if (userIdClaim is null || !Guid.TryParse(userIdClaim, out var userId))
+            return Unauthorized(new { error = "Invalid token." });
         await Mediator.Send(new RevokeTokenCommand { UserId = userId }, cancellationToken);
         return NoContent();
     }

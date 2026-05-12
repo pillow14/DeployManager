@@ -8,6 +8,8 @@ using DeployManager.Api.Middleware;
 using DeployManager.Application;
 using DeployManager.Application.Common.Interfaces;
 using DeployManager.Domain.Common;
+using DeployManager.Domain.Entities;
+using DeployManager.Domain.Interfaces;
 using DeployManager.Infrastructure;
 using DeployManager.Infrastructure.Data;
 
@@ -92,11 +94,38 @@ try
 
     var app = builder.Build();
 
-    using (var scope = app.Services.CreateScope())
+    var dbProvider = builder.Configuration["DatabaseProvider"] ?? "SqlServer";
+    if (dbProvider.Equals("InMemory", StringComparison.OrdinalIgnoreCase))
     {
-        var context = scope.ServiceProvider.GetRequiredService<DeployDbContext>();
-        var passwordService = scope.ServiceProvider.GetRequiredService<IPasswordService>();
-        await DbSeeder.SeedAsync(context, passwordService);
+        using (var scope = app.Services.CreateScope())
+        {
+            var uow = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+            var passwordService = scope.ServiceProvider.GetRequiredService<IPasswordService>();
+            var users = await uow.Repository<User>().GetAllAsync();
+            if (!users.Any())
+            {
+                var admin = new User
+                {
+                    Username = "admin",
+                    Email = "admin@deploymanager.com",
+                    PasswordHash = passwordService.Hash("Admin123!"),
+                    Role = Roles.Administrator,
+                    IsActive = true
+                };
+                await uow.Repository<User>().AddAsync(admin);
+                await uow.SaveChangesAsync();
+                logger.Info("InMemory seed: admin user created.");
+            }
+        }
+    }
+    else
+    {
+        using (var scope = app.Services.CreateScope())
+        {
+            var context = scope.ServiceProvider.GetRequiredService<DeployDbContext>();
+            var passwordService = scope.ServiceProvider.GetRequiredService<IPasswordService>();
+            await DbSeeder.SeedAsync(context, passwordService);
+        }
     }
 
     if (app.Environment.IsDevelopment())

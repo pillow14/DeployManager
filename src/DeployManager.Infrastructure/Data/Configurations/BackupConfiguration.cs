@@ -12,7 +12,7 @@ public class BackupConfiguration : IEntityTypeConfiguration<Backup>
         builder.Property(e => e.FilePath).HasMaxLength(1000).IsRequired();
 
         builder.HasOne(e => e.DeployJob)
-            .WithMany()
+            .WithMany(j => j.Backups)
             .HasForeignKey(e => e.DeployJobId)
             .OnDelete(DeleteBehavior.Cascade);
     }

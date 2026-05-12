@@ -1,5 +1,5 @@
 import { Outlet, Link, useNavigate } from 'react-router-dom'
-import { useAuth } from '@/providers/AuthProvider'
+import { useAuth } from '@/providers/useAuth'
 
 export function MainLayout() {
   const navigate = useNavigate()
