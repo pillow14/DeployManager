@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/DeployManager.Api/DeployManager.Api.csproj" />
+    <Project Path="src/DeployManager.Application/DeployManager.Application.csproj" />
+    <Project Path="src/DeployManager.Domain/DeployManager.Domain.csproj" />
+    <Project Path="src/DeployManager.Infrastructure/DeployManager.Infrastructure.csproj" />
+    <Project Path="src/DeployManager.Worker/DeployManager.Worker.csproj" />
+  </Folder>
+</Solution>

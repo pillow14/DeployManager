@@ -1,0 +1,6 @@
+@DeployManager.Api_HostAddress = http://localhost:5042
+
+GET {{DeployManager.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
