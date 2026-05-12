@@ -5,6 +5,7 @@ import { z } from 'zod'
 import { useNavigate } from 'react-router-dom'
 import { AxiosError } from 'axios'
 import { useLogin } from '@/shared/hooks/useAuth'
+import { useAuth } from '@/providers/AuthProvider'
 import { Button } from '@/shared/components/Button'
 import { Input } from '@/shared/components/Input'
 
@@ -17,7 +18,8 @@ type LoginForm = z.infer<typeof loginSchema>
 
 export function LoginPage() {
   const navigate = useNavigate()
-  const login = useLogin()
+  const loginMutation = useLogin()
+  const { login } = useAuth()
   const [serverError, setServerError] = useState<string | null>(null)
 
   const {
@@ -31,7 +33,8 @@ export function LoginPage() {
   const onSubmit = async (data: LoginForm) => {
     try {
       setServerError(null)
-      await login.mutateAsync(data)
+      const response = await loginMutation.mutateAsync(data)
+      login(response.token, response.refreshToken, response.username, response.role)
       navigate('/dashboard')
     } catch (err) {
       if (err instanceof AxiosError && err.response?.data?.error) {
@@ -62,7 +65,7 @@ export function LoginPage() {
       {serverError && (
         <p className="text-sm text-red-600" role="alert">{serverError}</p>
       )}
-      <Button type="submit" className="w-full" isLoading={login.isPending}>
+      <Button type="submit" className="w-full" isLoading={loginMutation.isPending}>
         Sign In
       </Button>
     </form>

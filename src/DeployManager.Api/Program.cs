@@ -6,7 +6,10 @@ using NLog;
 using NLog.Web;
 using DeployManager.Api.Middleware;
 using DeployManager.Application;
+using DeployManager.Application.Common.Interfaces;
+using DeployManager.Domain.Common;
 using DeployManager.Infrastructure;
+using DeployManager.Infrastructure.Data;
 
 var logger = LogManager.Setup().LoadConfigurationFromAppSettings().GetCurrentClassLogger();
 logger.Debug("Starting DeployManager.Api");
@@ -43,7 +46,12 @@ try
             };
         });
 
-    builder.Services.AddAuthorization();
+    builder.Services.AddAuthorization(options =>
+    {
+        options.AddPolicy("AdminOnly", policy => policy.RequireRole(Roles.Administrator));
+        options.AddPolicy("PublisherOrAbove", policy => policy.RequireRole(Roles.Administrator, Roles.Publisher));
+        options.AddPolicy("Authenticated", policy => policy.RequireAuthenticatedUser());
+    });
 
     builder.Services.AddSwaggerGen(c =>
     {
@@ -83,6 +91,13 @@ try
     });
 
     var app = builder.Build();
+
+    using (var scope = app.Services.CreateScope())
+    {
+        var context = scope.ServiceProvider.GetRequiredService<DeployDbContext>();
+        var passwordService = scope.ServiceProvider.GetRequiredService<IPasswordService>();
+        await DbSeeder.SeedAsync(context, passwordService);
+    }
 
     if (app.Environment.IsDevelopment())
     {

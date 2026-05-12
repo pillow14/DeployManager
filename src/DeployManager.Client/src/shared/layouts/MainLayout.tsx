@@ -1,11 +1,12 @@
 import { Outlet, Link, useNavigate } from 'react-router-dom'
+import { useAuth } from '@/providers/AuthProvider'
 
 export function MainLayout() {
   const navigate = useNavigate()
+  const { user, logout } = useAuth()
 
-  const handleLogout = () => {
-    localStorage.removeItem('token')
-    localStorage.removeItem('refreshToken')
+  const handleLogout = async () => {
+    await logout()
     navigate('/login')
   }
 
@@ -33,12 +34,20 @@ export function MainLayout() {
                 </Link>
               </div>
             </div>
-            <button
-              onClick={handleLogout}
-              className="text-sm font-medium text-gray-700 hover:text-red-600"
-            >
-              Logout
-            </button>
+            <div className="flex items-center gap-4">
+              <span className="text-sm text-gray-500">
+                {user?.username}
+                <span className="ml-1.5 rounded bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600">
+                  {user?.role}
+                </span>
+              </span>
+              <button
+                onClick={handleLogout}
+                className="text-sm font-medium text-gray-700 hover:text-red-600"
+              >
+                Logout
+              </button>
+            </div>
           </div>
         </div>
       </nav>

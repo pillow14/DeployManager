@@ -17,3 +17,15 @@ export interface RegisterRequest {
   password: string
   role: string
 }
+
+export interface RefreshTokenRequest {
+  token: string
+  refreshToken: string
+}
+
+export interface AuthUser {
+  username: string
+  role: string
+  token: string
+  refreshToken: string
+}

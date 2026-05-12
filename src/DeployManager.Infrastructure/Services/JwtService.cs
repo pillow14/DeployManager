@@ -44,7 +44,7 @@ public class JwtService : IJwtService
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
-    public string? ValidateToken(string token)
+    public ClaimsPrincipal? GetPrincipalFromExpiredToken(string token)
     {
         var key = new SymmetricSecurityKey(
             Encoding.UTF8.GetBytes(GetRequiredConfig("Jwt:Key")));
@@ -52,7 +52,7 @@ public class JwtService : IJwtService
         var handler = new JwtSecurityTokenHandler();
         try
         {
-            handler.ValidateToken(token, new TokenValidationParameters
+            var principal = handler.ValidateToken(token, new TokenValidationParameters
             {
                 ValidateIssuerSigningKey = true,
                 IssuerSigningKey = key,
@@ -60,11 +60,11 @@ public class JwtService : IJwtService
                 ValidIssuer = GetRequiredConfig("Jwt:Issuer"),
                 ValidateAudience = true,
                 ValidAudience = GetRequiredConfig("Jwt:Audience"),
+                ValidateLifetime = false,
                 ClockSkew = TimeSpan.Zero
-            }, out var validatedToken);
+            }, out _);
 
-            var jwtToken = (JwtSecurityToken)validatedToken;
-            return jwtToken.Subject;
+            return principal;
         }
         catch
         {
