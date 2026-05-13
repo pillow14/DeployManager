@@ -9,6 +9,7 @@ using DeployManager.Application;
 using DeployManager.Application.Common.Interfaces;
 using DeployManager.Domain.Common;
 using DeployManager.Domain.Entities;
+using DeployManager.Domain.Enums;
 using DeployManager.Domain.Interfaces;
 using DeployManager.Infrastructure;
 using DeployManager.Infrastructure.Data;
@@ -101,8 +102,8 @@ try
         {
             var uow = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
             var passwordService = scope.ServiceProvider.GetRequiredService<IPasswordService>();
-            var users = await uow.Repository<User>().GetAllAsync();
-            if (!users.Any())
+
+            if (!(await uow.Repository<User>().GetAllAsync()).Any())
             {
                 var admin = new User
                 {
@@ -113,9 +114,23 @@ try
                     IsActive = true
                 };
                 await uow.Repository<User>().AddAsync(admin);
-                await uow.SaveChangesAsync();
                 logger.Info("InMemory seed: admin user created.");
             }
+
+            if (!(await uow.Repository<DeployEnvironment>().GetAllAsync()).Any())
+            {
+                var environments = new[]
+                {
+                    new DeployEnvironment { Name = "Development", Description = "Development environment", TargetType = DeployTargetType.IIS, TargetUrl = "http://dev.local", IsActive = true },
+                    new DeployEnvironment { Name = "Staging", Description = "Staging environment", TargetType = DeployTargetType.IIS, TargetUrl = "http://staging.local", IsActive = true },
+                    new DeployEnvironment { Name = "Production", Description = "Production environment", TargetType = DeployTargetType.IIS, TargetUrl = "http://production.local", IsActive = true }
+                };
+                foreach (var env in environments)
+                    await uow.Repository<DeployEnvironment>().AddAsync(env);
+                logger.Info("InMemory seed: 3 environments created.");
+            }
+
+            await uow.SaveChangesAsync();
         }
     }
     else

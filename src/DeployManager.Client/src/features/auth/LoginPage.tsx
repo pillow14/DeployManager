@@ -3,6 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useNavigate } from 'react-router-dom'
 import { AxiosError } from 'axios'
+import { flushSync } from 'react-dom'
 import Swal from 'sweetalert2'
 import { useLogin } from '@/shared/hooks/useAuth'
 import { useAuth } from '@/providers/useAuth'
@@ -32,12 +33,8 @@ export function LoginPage() {
   const onSubmit = async (data: LoginForm) => {
     try {
       const response = await loginMutation.mutateAsync(data)
-      login(response.token, response.refreshToken, response.username, response.role)
-      await Swal.fire({
-        icon: 'success',
-        title: 'Inicio de sesión exitoso',
-        timer: 1500,
-        showConfirmButton: false,
+      flushSync(() => {
+        login(response.token, response.refreshToken, response.username, response.role)
       })
       navigate('/dashboard')
     } catch (err) {

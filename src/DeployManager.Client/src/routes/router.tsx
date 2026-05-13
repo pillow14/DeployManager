@@ -2,6 +2,7 @@ import { createBrowserRouter, Navigate } from 'react-router-dom'
 import { AuthLayout } from '@/shared/layouts/AuthLayout'
 import { LoginPage } from '@/features/auth/LoginPage'
 import { DashboardPage } from '@/features/dashboard/DashboardPage'
+import { EnvironmentsPage } from '@/features/environments/EnvironmentsPage'
 import { SitesPage } from '@/features/deploy-sites/SitesPage'
 import { RulesPage } from '@/features/deploy-rules/RulesPage'
 import { HistoryPage } from '@/features/deploy-history/HistoryPage'
@@ -28,6 +29,7 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <Navigate to="/dashboard" replace /> },
       { path: 'dashboard', element: <DashboardPage /> },
+      { path: 'environments', element: <ProtectedRoute roles={[ROLES.ADMIN, ROLES.PUBLISHER]}><EnvironmentsPage /></ProtectedRoute> },
       { path: 'sites', element: <ProtectedRoute roles={[ROLES.ADMIN, ROLES.PUBLISHER]}><SitesPage /></ProtectedRoute> },
       { path: 'rules', element: <ProtectedRoute roles={[ROLES.ADMIN]}><RulesPage /></ProtectedRoute> },
       { path: 'history', element: <HistoryPage /> },

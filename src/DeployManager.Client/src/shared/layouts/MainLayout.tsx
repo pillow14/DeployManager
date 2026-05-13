@@ -23,6 +23,9 @@ export function MainLayout() {
                 <Link to="/dashboard" className="text-sm font-medium text-gray-700 hover:text-blue-600">
                   Dashboard
                 </Link>
+                <Link to="/environments" className="text-sm font-medium text-gray-700 hover:text-blue-600">
+                  Environments
+                </Link>
                 <Link to="/sites" className="text-sm font-medium text-gray-700 hover:text-blue-600">
                   Sites
                 </Link>

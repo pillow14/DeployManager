@@ -1,7 +1,8 @@
-import { useState, useCallback, type ReactNode } from 'react'
+import { useState, useCallback, useEffect, type ReactNode } from 'react'
 import { authApi } from '@/shared/api/auth'
 import type { AuthUser } from '@/shared/types/auth'
 import { AuthContext } from '@/providers/AuthContext'
+import { subscribeToAuth, dispatchAuthEvent } from '@/shared/utils/authStore'
 
 function getStoredUser(): AuthUser | null {
   try {
@@ -15,10 +16,13 @@ function getStoredUser(): AuthUser | null {
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(getStoredUser)
 
+  useEffect(() => subscribeToAuth(() => setUser(getStoredUser())), [])
+
   const login = useCallback((token: string, refreshToken: string, username: string, role: string) => {
     const authUser: AuthUser = { token, refreshToken, username, role }
     localStorage.setItem('auth_user', JSON.stringify(authUser))
     setUser(authUser)
+    dispatchAuthEvent()
   }, [])
 
   const logout = useCallback(async () => {
@@ -29,6 +33,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     localStorage.removeItem('auth_user')
     setUser(null)
+    dispatchAuthEvent()
   }, [])
 
   const updateUser = useCallback((authUser: AuthUser) => {
