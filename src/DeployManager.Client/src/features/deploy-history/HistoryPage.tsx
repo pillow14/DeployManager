@@ -38,35 +38,35 @@ export function HistoryPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Deploy History" description="View all deployment jobs" />
+      <PageHeader title="Historial de Despliegues" description="Revisa todos los trabajos de despliegue ejecutados" />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <MetricCard label="Total Deployments" value={totalJobs} />
-        <MetricCard label="Completed" value={completed} trend={completed > 0 ? { direction: 'up', value: `${completed} total` } : undefined} />
-        <MetricCard label="Failed" value={failed} trend={failed > 0 ? { direction: 'down', value: `${failed} total` } : undefined} />
-        <MetricCard label="In Progress" value={pending} />
+        <MetricCard label="Total Despliegues" value={totalJobs} />
+        <MetricCard label="Completados" value={completed} trend={completed > 0 ? { direction: 'up', value: `${completed} total` } : undefined} />
+        <MetricCard label="Fallidos" value={failed} trend={failed > 0 ? { direction: 'down', value: `${failed} total` } : undefined} />
+        <MetricCard label="En Progreso" value={pending} />
       </div>
 
-      <div className="flex flex-wrap gap-4 rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+      <div className="flex flex-wrap gap-4 rounded-xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-gray-900">
         <select
           value={filters.status ?? ''}
           onChange={(e) => setFilters((f) => ({ ...f, status: e.target.value || undefined }))}
-          className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-          aria-label="Filter by status"
+          className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200"
+          aria-label="Filtrar por estado"
         >
-          <option value="">All statuses</option>
+          <option value="">Todos los estados</option>
           {STATUS_OPTIONS.filter(Boolean).map((s) => (
-            <option key={s} value={s}>{s}</option>
+            <option key={s} value={s}>{s === 'InProgress' ? 'In Progress' : s}</option>
           ))}
         </select>
 
         <select
           value={filters.environmentId ?? ''}
           onChange={(e) => setFilters((f) => ({ ...f, environmentId: e.target.value || undefined }))}
-          className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-          aria-label="Filter by environment"
+          className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200"
+          aria-label="Filtrar por entorno"
         >
-          <option value="">All environments</option>
+          <option value="">Todos los entornos</option>
           {environments?.map((env) => (
             <option key={env.id} value={env.id}>{env.name}</option>
           ))}
@@ -76,87 +76,86 @@ export function HistoryPage() {
           type="date"
           value={filters.from ?? ''}
           onChange={(e) => setFilters((f) => ({ ...f, from: e.target.value || undefined }))}
-          className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-          aria-label="From date"
+          className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200"
+          aria-label="Desde fecha"
         />
 
         <input
           type="date"
           value={filters.to ?? ''}
           onChange={(e) => setFilters((f) => ({ ...f, to: e.target.value || undefined }))}
-          className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-          aria-label="To date"
+          className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200"
+          aria-label="Hasta fecha"
         />
 
         {Object.keys(filters).length > 0 && (
           <button
             onClick={() => setFilters({})}
-            className="rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-600 hover:bg-gray-50"
+            className="rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-400 dark:hover:bg-gray-800"
           >
-            Clear filters
+            Limpiar filtros
           </button>
         )}
       </div>
 
       {isLoading ? (
-        <LoadingState message="Loading deploy history..." />
+        <LoadingState message="Cargando historial de despliegues..." />
       ) : !jobs?.length ? (
         <EmptyState
-          icon="history"
-          title="No deployment history"
-          description="Deploy jobs will appear here once you start deploying."
+          title="Sin historial de despliegues"
+          description="Los despliegues aparecerán aquí una vez que comiences a desplegar."
         />
       ) : (
-        <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+        <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
+          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead className="bg-gray-50 dark:bg-gray-800">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Site</th>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Environment</th>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">File</th>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Status</th>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Duration</th>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500">Date</th>
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Sitio</th>
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Entorno</th>
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Archivo</th>
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Estado</th>
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Duración</th>
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Fecha</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
               {jobs!.map((job) => (
                 <tr
                   key={job.id}
-                  className="hover:bg-gray-50 cursor-pointer"
+                  className="hover:bg-gray-50 cursor-pointer dark:hover:bg-gray-800/50"
                   onClick={async () => {
                     await Swal.fire({
-                      title: `Deploy: ${job.fileName}`,
+                      title: `Despliegue: ${job.fileName}`,
                       html: `
                         <div style="text-align:left">
-                          <p><strong>Site:</strong> ${job.siteName}</p>
-                          <p><strong>Environment:</strong> ${job.environmentName}</p>
-                          <p><strong>Status:</strong> ${job.status}</p>
-                          <p><strong>File:</strong> ${job.fileName} (${formatFileSize(job.fileSize)})</p>
-                          <p><strong>Started:</strong> ${job.startedAt ? new Date(job.startedAt).toLocaleString() : '-'}</p>
-                          <p><strong>Completed:</strong> ${job.completedAt ? new Date(job.completedAt).toLocaleString() : '-'}</p>
-                          ${job.logSummary ? `<p><strong>Summary:</strong> ${job.logSummary}</p>` : ''}
+                          <p><strong>Sitio:</strong> ${job.siteName}</p>
+                          <p><strong>Entorno:</strong> ${job.environmentName}</p>
+                          <p><strong>Estado:</strong> ${job.status}</p>
+                          <p><strong>Archivo:</strong> ${job.fileName} (${formatFileSize(job.fileSize)})</p>
+                          <p><strong>Inicio:</strong> ${job.startedAt ? new Date(job.startedAt).toLocaleString() : '-'}</p>
+                          <p><strong>Término:</strong> ${job.completedAt ? new Date(job.completedAt).toLocaleString() : '-'}</p>
+                          ${job.logSummary ? `<p><strong>Resumen:</strong> ${job.logSummary}</p>` : ''}
                           ${job.errorMessage ? `<p><strong>Error:</strong> ${job.errorMessage}</p>` : ''}
-                          ${job.createdByUsername ? `<p><strong>Created by:</strong> ${job.createdByUsername}</p>` : ''}
+                          ${job.createdByUsername ? `<p><strong>Creado por:</strong> ${job.createdByUsername}</p>` : ''}
                         </div>
                       `,
-                      confirmButtonText: 'Close',
+                      confirmButtonText: 'Cerrar',
                     })
                   }}
                 >
-                  <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900">{job.siteName}</td>
-                  <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-700">{job.environmentName}</td>
-                  <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-700">
+                  <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900 dark:text-gray-100">{job.siteName}</td>
+                  <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-700 dark:text-gray-300">{job.environmentName}</td>
+                  <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-700 dark:text-gray-300">
                     {job.fileName}
-                    <span className="ml-1 text-xs text-gray-400">({formatFileSize(job.fileSize)})</span>
+                    <span className="ml-1 text-xs text-gray-400 dark:text-gray-500">({formatFileSize(job.fileSize)})</span>
                   </td>
                   <td className="whitespace-nowrap px-6 py-4">
                     <StatusBadge status={job.status} />
                   </td>
-                  <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-700">
+                  <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-700 dark:text-gray-300">
                     {formatDuration(job.startedAt, job.completedAt)}
                   </td>
-                  <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
+                  <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
                     {new Date(job.createdAt).toLocaleDateString()}
                   </td>
                 </tr>

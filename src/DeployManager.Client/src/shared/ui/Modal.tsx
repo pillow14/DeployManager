@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { X } from 'lucide-react'
 import { cn } from '@/shared/utils/cn'
 import type { ReactNode } from 'react'
 
@@ -7,10 +8,18 @@ interface ModalProps {
   onClose: () => void
   title: string
   children: ReactNode
+  size?: 'sm' | 'md' | 'lg' | 'xl'
   className?: string
 }
 
-export function Modal({ open, onClose, title, children, className }: ModalProps) {
+const sizeClasses = {
+  sm: 'max-w-md',
+  md: 'max-w-lg',
+  lg: 'max-w-2xl',
+  xl: 'max-w-4xl',
+}
+
+export function Modal({ open, onClose, title, children, size = 'md', className }: ModalProps) {
   const overlayRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -27,24 +36,24 @@ export function Modal({ open, onClose, title, children, className }: ModalProps)
   return (
     <div
       ref={overlayRef}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm"
       onClick={(e) => { if (e.target === overlayRef.current) onClose() }}
       role="dialog"
       aria-modal="true"
       aria-label={title}
     >
-      <div className={cn('w-full max-w-lg rounded-xl bg-white p-6 shadow-xl', className)}>
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
+      <div className={cn('w-full rounded-xl bg-white shadow-xl dark:bg-gray-900', sizeClasses[size], className)}>
+        <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4 dark:border-gray-700">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{title}</h2>
           <button
             onClick={onClose}
-            className="rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+            className="rounded-md p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-800 dark:hover:text-gray-300"
             aria-label="Close"
           >
-            <span className="material-symbols-outlined text-xl">close</span>
+            <X className="h-5 w-5" />
           </button>
         </div>
-        {children}
+        <div className="px-6 py-4">{children}</div>
       </div>
     </div>
   )

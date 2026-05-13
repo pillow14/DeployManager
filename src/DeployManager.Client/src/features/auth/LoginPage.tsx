@@ -11,8 +11,8 @@ import { Button } from '@/shared/components/Button'
 import { Input } from '@/shared/components/Input'
 
 const loginSchema = z.object({
-  username: z.string().min(1, 'Username is required'),
-  password: z.string().min(1, 'Password is required'),
+  username: z.string().min(1, 'El usuario es obligatorio'),
+  password: z.string().min(1, 'La contraseña es obligatoria'),
 })
 
 type LoginForm = z.infer<typeof loginSchema>
@@ -66,21 +66,21 @@ export function LoginPage() {
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       <Input
         id="username"
-        label="Username"
-        placeholder="Enter your username"
+        label="Usuario"
+        placeholder="Ingrese su usuario"
         error={errors.username?.message}
         {...register('username')}
       />
       <Input
         id="password"
-        label="Password"
+        label="Contraseña"
         type="password"
-        placeholder="Enter your password"
+        placeholder="Ingrese su contraseña"
         error={errors.password?.message}
         {...register('password')}
       />
-      <Button type="submit" className="w-full" isLoading={loginMutation.isPending}>
-        {loginMutation.isPending ? 'Ingresando...' : 'Sign In'}
+      <Button type="submit" className="w-full dark:text-white" isLoading={loginMutation.isPending}>
+        {loginMutation.isPending ? 'Ingresando...' : 'Iniciar Sesión'}
       </Button>
     </form>
   )
