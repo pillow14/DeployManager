@@ -24,10 +24,12 @@ public class GetAllDeployRulesQueryHandler : IRequestHandler<GetAllDeployRulesQu
             .Select(r => new DeployRuleDto
             {
                 Id = r.Id,
-                Pattern = r.Pattern,
+                Name = r.Name,
+                SourcePattern = r.SourcePattern,
+                DestinationPath = r.DestinationPath,
                 Action = r.Action,
                 Order = r.Order,
-                IsEnabled = r.IsEnabled,
+                IsActive = r.IsActive,
                 CreatedAt = r.CreatedAt,
                 UpdatedAt = r.UpdatedAt
             });

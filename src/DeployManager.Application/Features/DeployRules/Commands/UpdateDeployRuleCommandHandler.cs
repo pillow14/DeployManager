@@ -21,10 +21,12 @@ public class UpdateDeployRuleCommandHandler : IRequestHandler<UpdateDeployRuleCo
         if (rule is null || rule.IsDeleted)
             throw new KeyNotFoundException("Rule not found.");
 
-        rule.Pattern = request.Pattern;
+        rule.Name = request.Name;
+        rule.SourcePattern = request.SourcePattern;
+        rule.DestinationPath = request.DestinationPath;
         rule.Action = request.Action;
         rule.Order = request.Order;
-        rule.IsEnabled = request.IsEnabled;
+        rule.IsActive = request.IsActive;
         rule.UpdatedAt = DateTime.UtcNow;
 
         await _unitOfWork.Repository<DeployRule>().UpdateAsync(rule, cancellationToken);

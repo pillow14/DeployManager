@@ -1,21 +1,25 @@
 export interface DeployRule {
   id: string
-  pattern: string
+  name: string
+  sourcePattern: string
+  destinationPath: string
   action: string
   order: number
-  isEnabled: boolean
+  isActive: boolean
   createdAt: string
   updatedAt: string | null
 }
 
 export interface CreateDeployRuleRequest {
-  pattern: string
+  name: string
+  sourcePattern: string
+  destinationPath: string
   action: string
   order: number
-  isEnabled?: boolean
+  isActive?: boolean
 }
 
 export interface UpdateDeployRuleRequest extends CreateDeployRuleRequest {
   id: string
-  isEnabled: boolean
+  isActive: boolean
 }

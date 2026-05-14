@@ -25,10 +25,12 @@ public class GetDeployRuleByIdQueryHandler : IRequestHandler<GetDeployRuleByIdQu
         return new DeployRuleDto
         {
             Id = rule.Id,
-            Pattern = rule.Pattern,
+            Name = rule.Name,
+            SourcePattern = rule.SourcePattern,
+            DestinationPath = rule.DestinationPath,
             Action = rule.Action,
             Order = rule.Order,
-            IsEnabled = rule.IsEnabled,
+            IsActive = rule.IsActive,
             CreatedAt = rule.CreatedAt,
             UpdatedAt = rule.UpdatedAt
         };

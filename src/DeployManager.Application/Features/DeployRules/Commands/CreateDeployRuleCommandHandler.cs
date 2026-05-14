@@ -17,10 +17,12 @@ public class CreateDeployRuleCommandHandler : IRequestHandler<CreateDeployRuleCo
     {
         var rule = new DeployRule
         {
-            Pattern = request.Pattern,
+            Name = request.Name,
+            SourcePattern = request.SourcePattern,
+            DestinationPath = request.DestinationPath,
             Action = request.Action,
             Order = request.Order,
-            IsEnabled = request.IsEnabled
+            IsActive = request.IsActive
         };
 
         await _unitOfWork.Repository<DeployRule>().AddAsync(rule, cancellationToken);
