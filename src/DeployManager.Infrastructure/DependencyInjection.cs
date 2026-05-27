@@ -34,6 +34,12 @@ public static class DependencyInjection
 
         services.AddScoped<IJwtService, JwtService>();
         services.AddScoped<IPasswordService, PasswordService>();
+        services.AddScoped<IFileStorageService, FileStorageService>();
+
+        services.AddScoped<IDeployTarget, LocalDeployTarget>();
+        services.AddScoped<IDeployTarget, UncDeployTarget>();
+        services.AddScoped<IDeployTarget, FtpDeployTarget>();
+        services.AddScoped<IDeployTarget, AzureKuduDeployTarget>();
 
         return services;
     }

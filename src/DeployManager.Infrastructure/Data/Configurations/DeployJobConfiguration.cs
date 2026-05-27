@@ -17,6 +17,11 @@ public class DeployJobConfiguration : IEntityTypeConfiguration<DeployJob>
             .HasForeignKey(e => e.SiteId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        builder.HasOne(e => e.Package)
+            .WithMany()
+            .HasForeignKey(e => e.PackageId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         builder.HasOne(e => e.CreatedByUser)
             .WithMany()
             .HasForeignKey(e => e.CreatedByUserId)

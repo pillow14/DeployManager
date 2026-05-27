@@ -14,6 +14,10 @@ public class DeployDbContext : DbContext
     public DbSet<DeployJob> DeployJobs => Set<DeployJob>();
     public DbSet<DeployLog> DeployLogs => Set<DeployLog>();
     public DbSet<Backup> Backups => Set<Backup>();
+    public DbSet<DeployPackage> Packages => Set<DeployPackage>();
+    public DbSet<DeploymentMode> DeploymentModes => Set<DeploymentMode>();
+    public DbSet<DeployRuleSet> RuleSets => Set<DeployRuleSet>();
+    public DbSet<DeployBlockedPattern> BlockedPatterns => Set<DeployBlockedPattern>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

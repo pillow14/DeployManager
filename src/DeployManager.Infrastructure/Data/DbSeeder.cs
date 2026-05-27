@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using DeployManager.Application.Common.Interfaces;
 using DeployManager.Domain.Common;
 using DeployManager.Domain.Entities;
+using DeployManager.Domain.Enums;
 
 namespace DeployManager.Infrastructure.Data;
 
@@ -22,8 +23,16 @@ public static class DbSeeder
             Role = Roles.Administrator,
             IsActive = true
         };
-
         context.Users.Add(admin);
+
+        var environments = new[]
+        {
+            new DeployEnvironment { Name = "Development", Description = "Development environment", TargetType = DeployTargetType.IIS, TargetUrl = "http://dev.local", IsActive = true },
+            new DeployEnvironment { Name = "Staging", Description = "Staging environment", TargetType = DeployTargetType.IIS, TargetUrl = "http://staging.local", IsActive = true },
+            new DeployEnvironment { Name = "Production", Description = "Production environment", TargetType = DeployTargetType.IIS, TargetUrl = "http://production.local", IsActive = true }
+        };
+        context.Environments.AddRange(environments);
+
         await context.SaveChangesAsync();
     }
 }

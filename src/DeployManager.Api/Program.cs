@@ -13,6 +13,7 @@ using DeployManager.Domain.Enums;
 using DeployManager.Domain.Interfaces;
 using DeployManager.Infrastructure;
 using DeployManager.Infrastructure.Data;
+using DeployManager.Api.Configuration;
 
 var logger = LogManager.Setup().LoadConfigurationFromAppSettings().GetCurrentClassLogger();
 logger.Debug("Starting DeployManager.Api");
@@ -27,6 +28,7 @@ try
 
     builder.Services.AddApplication();
     builder.Services.AddInfrastructure(builder.Configuration);
+    builder.Services.Configure<PackageMockOptions>(builder.Configuration.GetSection("FeatureFlags"));
 
     builder.Services.AddControllers();
 

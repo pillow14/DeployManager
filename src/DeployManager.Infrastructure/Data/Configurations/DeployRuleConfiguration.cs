@@ -13,5 +13,10 @@ public class DeployRuleConfiguration : IEntityTypeConfiguration<DeployRule>
         builder.Property(e => e.SourcePattern).HasMaxLength(500).IsRequired();
         builder.Property(e => e.DestinationPath).HasMaxLength(500).IsRequired();
         builder.Property(e => e.Action).HasMaxLength(50).IsRequired();
+
+        builder.HasOne(e => e.DeployRuleSet)
+            .WithMany(rs => rs.Rules)
+            .HasForeignKey(e => e.DeployRuleSetId)
+            .OnDelete(DeleteBehavior.SetNull);
     }
 }

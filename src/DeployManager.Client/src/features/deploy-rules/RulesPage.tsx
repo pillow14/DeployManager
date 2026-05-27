@@ -36,14 +36,6 @@ const ruleSchema = z.object({
 
 type RuleForm = z.infer<typeof ruleSchema>
 
-const actionColors: Record<string, string> = {
-  copy_overwrite: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-  copy_if_not_exists: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-  omit: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
-  backup_and_copy: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
-  delete_and_copy: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
-}
-
 const actionLabels: Record<string, string> = {}
 ACTIONS.forEach((a) => { actionLabels[a.value] = a.label })
 

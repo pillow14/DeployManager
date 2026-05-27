@@ -33,8 +33,12 @@ public class CreateDeploySiteCommandValidator : AbstractValidator<CreateDeploySi
             .When(x => !string.IsNullOrWhiteSpace(x.PublicUrl))
             .WithMessage("Public URL must be a valid URL.");
 
+        RuleFor(x => x.PublicUrl)
+            .NotEmpty().WithMessage("Server URL (PublicUrl) is required for remote deployments.")
+            .When(x => x.TargetType is "FTPS" or "AzureAppService");
+
         RuleFor(x => x.Username)
             .NotEmpty().WithMessage("Username is required for remote connections.")
-            .When(x => x.TargetType is "FTPS" or "UNC");
+            .When(x => x.TargetType is "FTPS" or "UNC" or "AzureAppService");
     }
 }
