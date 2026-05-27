@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
 
 type Theme = 'light' | 'dark'
@@ -36,6 +36,4 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   )
 }
 
-export function useTheme() {
-  return useContext(ThemeContext)
-}
+export { ThemeContext }

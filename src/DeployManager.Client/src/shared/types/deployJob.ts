@@ -14,6 +14,19 @@ export interface DeployJob {
   createdByUsername: string | null
 }
 
+export interface DeployJobDetail extends DeployJob {
+  siteCode: string
+  targetType: string
+  hasBackup: boolean
+  logs: DeployLogEntry[]
+}
+
+export interface DeployLogEntry {
+  timestamp: string
+  level: string
+  message: string
+}
+
 export interface DeployJobsQueryParams {
   status?: string
   from?: string

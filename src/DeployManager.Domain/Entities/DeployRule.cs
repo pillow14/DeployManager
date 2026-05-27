@@ -10,4 +10,6 @@ public class DeployRule : BaseEntity
     public string Action { get; set; } = string.Empty;
     public int Order { get; set; }
     public bool IsActive { get; set; } = true;
+    public Guid? DeployRuleSetId { get; set; }
+    public DeployRuleSet? DeployRuleSet { get; set; }
 }

@@ -10,8 +10,8 @@ export default defineConfig({
   },
   webServer: [
     {
-      command: 'dotnet run --project ../DeployManager.Api',
-      port: 5042,
+      command: 'dotnet run --project ../DeployManager.Api --launch-profile https',
+      port: 7268,
       timeout: 60000,
       reuseExistingServer: true,
     },

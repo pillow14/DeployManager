@@ -19,7 +19,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/shared/utils/cn'
 import { useAuth } from '@/providers/useAuth'
-import { useTheme } from '@/shared/utils/ThemeProvider'
+import { useTheme } from '@/shared/hooks/useTheme'
 
 interface NavItem {
   icon: typeof LayoutDashboard
