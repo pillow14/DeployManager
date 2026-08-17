@@ -13,15 +13,21 @@ public class DeployRunnerService : IDeployRunnerService
     private readonly IFileStorageService _fileStorage;
     private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<DeployRunnerService> _logger;
+    private readonly IBackupManifestService _manifestService;
+    private readonly IStoragePathProvider _paths;
 
     public DeployRunnerService(
         IFileStorageService fileStorage,
         IUnitOfWork unitOfWork,
-        ILogger<DeployRunnerService> logger)
+        ILogger<DeployRunnerService> logger,
+        IBackupManifestService manifestService,
+        IStoragePathProvider paths)
     {
         _fileStorage = fileStorage;
         _unitOfWork = unitOfWork;
         _logger = logger;
+        _manifestService = manifestService;
+        _paths = paths;
     }
 
     public async Task ExecuteAsync(DeployJob job, IDeployTarget target, CancellationToken cancellationToken)
@@ -116,6 +122,38 @@ public class DeployRunnerService : IDeployRunnerService
             return;
         }
 
+        var rollbackBackupRoot = _paths.GetRollbackRoot(job.Id);
+        try
+        {
+            if (Directory.Exists(backupRoot))
+                CopyDirectory(backupRoot, rollbackBackupRoot);
+
+            var manifestEntries = new List<BackupManifestEntry>();
+            foreach (var deployEntry in deployEntries)
+            {
+                var backupRelativePath = deployEntry.RelativePath.Replace('\\', '/');
+                var backupFullPath = Path.Combine(rollbackBackupRoot, backupRelativePath.Replace('/', Path.DirectorySeparatorChar));
+                var existedBefore = File.Exists(backupFullPath);
+
+                manifestEntries.Add(new BackupManifestEntry
+                {
+                    RelativePath = deployEntry.RelativePath,
+                    SourceFilePath = deployEntry.ExtractedFullPath,
+                    BackupFilePath = existedBefore ? backupFullPath : null,
+                    SizeInBytes = 0,
+                    ExistedBeforeDeploy = existedBefore,
+                    CreatedByDeploy = !existedBefore,
+                    Action = deployEntry.Action
+                });
+            }
+
+            await _manifestService.SaveManifestAsync(job, manifestEntries, cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to create rollback backup for job {JobId}", job.Id);
+        }
+
         await Log(job, "Info", $"Deploying {deployEntries.Count} files to {rootPath}...", cancellationToken);
         try
         {
@@ -162,9 +200,9 @@ public class DeployRunnerService : IDeployRunnerService
         {
             try
             {
-                var zipDir = Path.Combine(Path.GetTempPath(), "DeployManager", "backup-zips");
+                var zipDir = _paths.GetBackupZipsDir();
                 Directory.CreateDirectory(zipDir);
-                var zipPath = Path.Combine(zipDir, $"{job.Id}.zip");
+                var zipPath = _paths.GetBackupZipPath(job.Id);
                 if (File.Exists(zipPath)) File.Delete(zipPath);
                 ZipFile.CreateFromDirectory(backupRoot, zipPath);
                 await Log(job, "Info", $"Respaldo comprimido: {zipPath}", cancellationToken);
@@ -216,5 +254,17 @@ public class DeployRunnerService : IDeployRunnerService
         };
         await _unitOfWork.Repository<DeployLog>().AddAsync(log, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+    }
+
+    private static void CopyDirectory(string sourceDir, string destDir)
+    {
+        Directory.CreateDirectory(destDir);
+        foreach (var file in Directory.GetFiles(sourceDir, "*", SearchOption.AllDirectories))
+        {
+            var relativePath = Path.GetRelativePath(sourceDir, file);
+            var destFile = Path.Combine(destDir, relativePath);
+            Directory.CreateDirectory(Path.GetDirectoryName(destFile)!);
+            File.Copy(file, destFile, overwrite: true);
+        }
     }
 }

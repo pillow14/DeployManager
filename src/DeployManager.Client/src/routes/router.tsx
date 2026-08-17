@@ -10,6 +10,7 @@ import { RollbackPage } from '@/features/rollback/RollbackPage'
 import { NewDeployPage } from '@/features/new-deploy/NewDeployPage'
 import { PackagesPage } from '@/features/packages/PackagesPage'
 import { SettingsPage } from '@/features/settings/SettingsPage'
+import { ScheduledDeploysPage } from '@/features/scheduled-deploys/ScheduledDeploysPage'
 import { ProtectedRoute, ProtectedLayout } from '@/routes/ProtectedRoute'
 
 const ROLES = {
@@ -39,6 +40,7 @@ export const router = createBrowserRouter([
       { path: 'new-deploy', element: <ProtectedRoute roles={[ROLES.ADMIN, ROLES.PUBLISHER]}><NewDeployPage /></ProtectedRoute> },
       { path: 'history', element: <HistoryPage /> },
       { path: 'rollback', element: <ProtectedRoute roles={[ROLES.ADMIN]}><RollbackPage /></ProtectedRoute> },
+      { path: 'scheduled-deploys', element: <ProtectedRoute roles={[ROLES.ADMIN, ROLES.PUBLISHER]}><ScheduledDeploysPage /></ProtectedRoute> },
       { path: 'settings', element: <ProtectedRoute roles={[ROLES.ADMIN]}><SettingsPage /> </ProtectedRoute> },
     ],
   },

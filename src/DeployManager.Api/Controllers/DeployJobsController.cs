@@ -1,6 +1,7 @@
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using DeployManager.Application.Common.Interfaces;
 using DeployManager.Application.Common.Services;
 using DeployManager.Application.Features.DeployJobs.Queries;
 
@@ -10,7 +11,8 @@ namespace DeployManager.Api.Controllers;
 [Route("api/jobs")]
 public class DeployJobsController(
     ISender mediator,
-    JobCancellationManager cancellationManager) : BaseApiController(mediator)
+    JobCancellationManager cancellationManager,
+    IStoragePathProvider paths) : BaseApiController(mediator)
 {
     [HttpGet]
     public async Task<IActionResult> GetAll([FromQuery] GetAllDeployJobsQuery query, CancellationToken cancellationToken)
@@ -29,7 +31,7 @@ public class DeployJobsController(
     [HttpGet("{id:guid}/download-backup")]
     public IActionResult DownloadBackup(Guid id)
     {
-        var zipPath = Path.Combine(Path.GetTempPath(), "DeployManager", "backup-zips", $"{id}.zip");
+        var zipPath = paths.GetBackupZipPath(id);
         if (!System.IO.File.Exists(zipPath))
             return NotFound(new { error = "Respaldo no encontrado." });
 

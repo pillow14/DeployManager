@@ -1,4 +1,5 @@
 using MediatR;
+using DeployManager.Application.Common.Interfaces;
 using DeployManager.Application.DTOs.DeployJobs;
 using DeployManager.Domain.Entities;
 using DeployManager.Domain.Interfaces;
@@ -13,10 +14,12 @@ public class GetDeployJobByIdQuery : IRequest<DeployJobDetailDto>
 public class GetDeployJobByIdQueryHandler : IRequestHandler<GetDeployJobByIdQuery, DeployJobDetailDto>
 {
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IStoragePathProvider _paths;
 
-    public GetDeployJobByIdQueryHandler(IUnitOfWork unitOfWork)
+    public GetDeployJobByIdQueryHandler(IUnitOfWork unitOfWork, IStoragePathProvider paths)
     {
         _unitOfWork = unitOfWork;
+        _paths = paths;
     }
 
     public async Task<DeployJobDetailDto> Handle(GetDeployJobByIdQuery request, CancellationToken cancellationToken)
@@ -55,7 +58,7 @@ public class GetDeployJobByIdQueryHandler : IRequestHandler<GetDeployJobByIdQuer
             CompletedAt = job.CompletedAt,
             CreatedAt = job.CreatedAt,
             CreatedByUsername = user?.Username,
-            HasBackup = File.Exists(Path.Combine(Path.GetTempPath(), "DeployManager", "backup-zips", $"{job.Id}.zip")),
+            HasBackup = File.Exists(_paths.GetBackupZipPath(job.Id)),
             Logs = logs
                 .OrderBy(l => l.CreatedAt)
                 .Select(l => new DeployLogEntryDto

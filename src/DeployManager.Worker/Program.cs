@@ -2,7 +2,6 @@ using NLog;
 using NLog.Web;
 using DeployManager.Application;
 using DeployManager.Infrastructure;
-using DeployManager.Worker.Workers;
 
 var logger = LogManager.Setup().LoadConfigurationFromAppSettings().GetCurrentClassLogger();
 logger.Debug("Starting DeployManager.Worker");
@@ -16,11 +15,17 @@ try
             logging.SetMinimumLevel(Microsoft.Extensions.Logging.LogLevel.Trace);
         })
         .UseNLog()
+        .ConfigureAppConfiguration((context, config) =>
+        {
+            config.AddJsonFile(
+                $"appsettings.{context.HostingEnvironment.EnvironmentName}.local.json",
+                optional: true,
+                reloadOnChange: true);
+        })
         .ConfigureServices((context, services) =>
         {
             services.AddApplication();
             services.AddInfrastructure(context.Configuration);
-            services.AddHostedService<DeployWorker>();
         })
         .Build();
 

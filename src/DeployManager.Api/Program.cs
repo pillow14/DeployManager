@@ -1,9 +1,12 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using NLog;
 using NLog.Web;
+using DeployManager.Api.Health;
 using DeployManager.Api.Middleware;
 using DeployManager.Application;
 using DeployManager.Application.Common.Interfaces;
@@ -22,6 +25,11 @@ try
 {
     var builder = WebApplication.CreateBuilder(args);
 
+    builder.Configuration.AddJsonFile(
+        $"appsettings.{builder.Environment.EnvironmentName}.local.json",
+        optional: true,
+        reloadOnChange: true);
+
     builder.Logging.ClearProviders();
     builder.Logging.SetMinimumLevel(Microsoft.Extensions.Logging.LogLevel.Trace);
     builder.Host.UseNLog();
@@ -30,7 +38,11 @@ try
     builder.Services.AddInfrastructure(builder.Configuration);
     builder.Services.Configure<PackageMockOptions>(builder.Configuration.GetSection("FeatureFlags"));
 
-    builder.Services.AddControllers();
+    builder.Services.AddControllers()
+        .AddJsonOptions(options =>
+        {
+            options.JsonSerializerOptions.Converters.Add(new DeployManager.Api.Converters.UtcDateTimeConverter());
+        });
 
     var jwtKey = builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationException("Jwt:Key is required");
     var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? throw new InvalidOperationException("Jwt:Issuer is required");
@@ -85,19 +97,43 @@ try
         });
     });
 
+    var dbProvider = builder.Configuration["DatabaseProvider"] ?? "SqlServer";
+    var corsOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? Array.Empty<string>();
+
     builder.Services.AddCors(options =>
     {
-        options.AddPolicy("AllowAll", policy =>
+        options.AddPolicy("Frontend", policy =>
         {
-            policy.AllowAnyOrigin()
-                  .AllowAnyMethod()
-                  .AllowAnyHeader();
+            if (corsOrigins.Length == 0)
+            {
+                policy.AllowAnyOrigin()
+                      .AllowAnyMethod()
+                      .AllowAnyHeader();
+            }
+            else
+            {
+                policy.WithOrigins(corsOrigins)
+                      .AllowAnyMethod()
+                      .AllowAnyHeader();
+            }
         });
     });
 
+    if (dbProvider.Equals("InMemory", StringComparison.OrdinalIgnoreCase))
+    {
+        builder.Services.AddHealthChecks();
+    }
+    else
+    {
+        builder.Services.AddHealthChecks().AddCheck<DatabaseHealthCheck>("database");
+    }
+
     var app = builder.Build();
 
-    var dbProvider = builder.Configuration["DatabaseProvider"] ?? "SqlServer";
+    var adminUsername = builder.Configuration["AdminUser:Username"] ?? "admin";
+    var adminEmail = builder.Configuration["AdminUser:Email"] ?? "admin@deploymanager.com";
+    var adminPassword = builder.Configuration["AdminUser:Password"] ?? string.Empty;
+
     if (dbProvider.Equals("InMemory", StringComparison.OrdinalIgnoreCase))
     {
         using (var scope = app.Services.CreateScope())
@@ -107,11 +143,14 @@ try
 
             if (!(await uow.Repository<User>().GetAllAsync()).Any())
             {
+                if (string.IsNullOrWhiteSpace(adminPassword))
+                    throw new InvalidOperationException("AdminUser:Password is required on first startup to create the initial administrator user.");
+
                 var admin = new User
                 {
-                    Username = "admin",
-                    Email = "admin@deploymanager.com",
-                    PasswordHash = passwordService.Hash("Admin123!"),
+                    Username = adminUsername,
+                    Email = adminEmail,
+                    PasswordHash = passwordService.Hash(adminPassword),
                     Role = Roles.Administrator,
                     IsActive = true
                 };
@@ -141,7 +180,7 @@ try
         {
             var context = scope.ServiceProvider.GetRequiredService<DeployDbContext>();
             var passwordService = scope.ServiceProvider.GetRequiredService<IPasswordService>();
-            await DbSeeder.SeedAsync(context, passwordService);
+            await DbSeeder.SeedAsync(context, passwordService, adminUsername, adminEmail, adminPassword);
         }
     }
 
@@ -151,12 +190,53 @@ try
         app.UseSwaggerUI();
     }
 
-    app.UseCors("AllowAll");
+    var wwwRoot = Path.Combine(app.Environment.ContentRootPath, "wwwroot");
+    var hasFrontend = File.Exists(Path.Combine(wwwRoot, "index.html"));
+
+    app.UseForwardedHeaders(new ForwardedHeadersOptions
+    {
+        ForwardedHeaders = ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedHost
+    });
+    app.UseCors("Frontend");
     app.UseMiddleware<ExceptionMiddleware>();
     app.UseHttpsRedirection();
     app.UseAuthentication();
     app.UseAuthorization();
+
+    if (hasFrontend)
+    {
+        app.UseDefaultFiles();
+        app.UseStaticFiles();
+    }
+
     app.MapControllers();
+    app.MapHealthChecks("/health");
+
+    if (hasFrontend)
+    {
+        app.MapWhen(
+            ctx => !ctx.Request.Path.StartsWithSegments("/api", StringComparison.OrdinalIgnoreCase)
+                && !ctx.Request.Path.StartsWithSegments("/health", StringComparison.OrdinalIgnoreCase)
+                && !ctx.Request.Path.StartsWithSegments("/swagger", StringComparison.OrdinalIgnoreCase),
+            spa =>
+            {
+                spa.UseDefaultFiles();
+                spa.UseStaticFiles();
+                spa.Run(async context =>
+                {
+                    var indexPath = Path.Combine(wwwRoot, "index.html");
+                    if (File.Exists(indexPath))
+                    {
+                        context.Response.ContentType = "text/html; charset=utf-8";
+                        await context.Response.SendFileAsync(indexPath);
+                    }
+                    else
+                    {
+                        context.Response.StatusCode = StatusCodes.Status404NotFound;
+                    }
+                });
+            });
+    }
 
     app.Run();
 }

@@ -18,6 +18,9 @@ public class DeployDbContext : DbContext
     public DbSet<DeploymentMode> DeploymentModes => Set<DeploymentMode>();
     public DbSet<DeployRuleSet> RuleSets => Set<DeployRuleSet>();
     public DbSet<DeployBlockedPattern> BlockedPatterns => Set<DeployBlockedPattern>();
+    public DbSet<RollbackExecution> RollbackExecutions => Set<RollbackExecution>();
+    public DbSet<RollbackExecutionDetail> RollbackExecutionDetails => Set<RollbackExecutionDetail>();
+    public DbSet<ScheduledDeploy> ScheduledDeploys => Set<ScheduledDeploy>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

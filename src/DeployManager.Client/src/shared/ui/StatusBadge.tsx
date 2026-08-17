@@ -16,6 +16,8 @@ const statusColors: Record<string, string> = {
   pending: 'bg-yellow-50 text-yellow-700 border border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-400 dark:border-yellow-800',
   inprogress: 'bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800',
   rolledback: 'bg-purple-50 text-purple-700 border border-purple-200 dark:bg-purple-900/30 dark:text-purple-400 dark:border-purple-800',
+  executing: 'bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800',
+  cancelled: 'bg-gray-50 text-gray-600 border border-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700',
   enabled: 'bg-green-50 text-green-700 border border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800',
   disabled: 'bg-gray-50 text-gray-600 border border-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700',
 }
@@ -30,6 +32,8 @@ const dotColors: Record<string, string> = {
   pending: 'bg-yellow-500',
   inprogress: 'bg-blue-500',
   rolledback: 'bg-purple-500',
+  executing: 'bg-blue-500',
+  cancelled: 'bg-gray-400',
   enabled: 'bg-green-500',
   disabled: 'bg-gray-400',
 }
