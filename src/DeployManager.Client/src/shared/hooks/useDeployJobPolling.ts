@@ -9,7 +9,6 @@ export function useDeployJobPolling(jobId: string | null) {
   const [data, setData] = useState<DeployJobDetail | null>(null)
   const [error, setError] = useState<string | null>(null)
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
-  const jobIdRef = useRef(jobId)
 
   const stopPolling = useCallback(() => {
     if (intervalRef.current !== null) {
@@ -42,12 +41,7 @@ export function useDeployJobPolling(jobId: string | null) {
 
   useEffect(() => {
     if (jobId) {
-      jobIdRef.current = jobId
       startPolling(jobId)
-    } else {
-      setData(null)
-      setError(null)
-      stopPolling()
     }
 
     return stopPolling
