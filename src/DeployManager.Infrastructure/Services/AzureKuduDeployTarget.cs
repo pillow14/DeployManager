@@ -15,18 +15,20 @@ public class AzureKuduDeployTarget : IDeployTarget
 
     private readonly ILogger<AzureKuduDeployTarget> _logger;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IStoragePathProvider _paths;
 
-    public AzureKuduDeployTarget(ILogger<AzureKuduDeployTarget> logger, IUnitOfWork unitOfWork)
+    public AzureKuduDeployTarget(ILogger<AzureKuduDeployTarget> logger, IUnitOfWork unitOfWork, IStoragePathProvider paths)
     {
         _logger = logger;
         _unitOfWork = unitOfWork;
+        _paths = paths;
     }
 
     public DeployTargetType TargetType => DeployTargetType.AzureAppService;
 
     public async Task<string> BackupAsync(DeployJob job, IReadOnlyList<BackupEntry> entries, CancellationToken cancellationToken)
     {
-        var backupRoot = Path.Combine(Path.GetTempPath(), "DeployManager", "backups", job.Id.ToString());
+        var backupRoot = _paths.GetBackupsRoot(job.Id);
         Directory.CreateDirectory(backupRoot);
 
         if (entries.Count == 0)
@@ -151,6 +153,24 @@ public class AzureKuduDeployTarget : IDeployTarget
             _logger.LogDebug("Kudu rolled back {Backup} -> {Remote}", backupPath, remotePath);
         }
     }
+
+    public Task<bool> ExistsAsync(string path, CancellationToken cancellationToken = default)
+        => throw new NotSupportedException("ExistsAsync is only supported for local/UNC targets. Use RollbackAsync for remote targets.");
+
+    public Task UploadAsync(string localPath, string targetPath, CancellationToken cancellationToken = default)
+        => throw new NotSupportedException("UploadAsync is only supported for local/UNC targets. Use RollbackAsync for remote targets.");
+
+    public Task DownloadAsync(string targetPath, string localPath, CancellationToken cancellationToken = default)
+        => throw new NotSupportedException("DownloadAsync is only supported for local/UNC targets.");
+
+    public Task DeleteAsync(string path, CancellationToken cancellationToken = default)
+        => throw new NotSupportedException("DeleteAsync is only supported for local/UNC targets. Use RollbackAsync for remote targets.");
+
+    public Task CreateDirectoryAsync(string path, CancellationToken cancellationToken = default)
+        => throw new NotSupportedException("CreateDirectoryAsync is only supported for local/UNC targets.");
+
+    public Task<List<string>> ListFilesAsync(string directory, CancellationToken cancellationToken = default)
+        => throw new NotSupportedException("ListFilesAsync is only supported for local/UNC targets.");
 
     private async Task<(string baseUrl, AuthenticationHeaderValue authHeader)> GetConnectionInfo(Guid siteId, CancellationToken cancellationToken)
     {

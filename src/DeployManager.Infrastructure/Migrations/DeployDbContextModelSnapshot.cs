@@ -468,6 +468,183 @@ namespace DeployManager.Infrastructure.Migrations
                     b.ToTable("DeploymentModes");
                 });
 
+            modelBuilder.Entity("DeployManager.Domain.Entities.RollbackExecution", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ErrorMessage")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid?>("ExecutedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("FinishedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid>("OriginalExecutionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<Guid>("SiteId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("StartedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ExecutedByUserId");
+
+                    b.HasIndex("OriginalExecutionId");
+
+                    b.HasIndex("SiteId");
+
+                    b.ToTable("RollbackExecutions");
+                });
+
+            modelBuilder.Entity("DeployManager.Domain.Entities.RollbackExecutionDetail", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("BackupFile")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Message")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("OriginalTargetFile")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("RelativePath")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<Guid>("RollbackExecutionId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RollbackExecutionId");
+
+                    b.ToTable("RollbackExecutionDetails");
+                });
+
+            modelBuilder.Entity("DeployManager.Domain.Entities.ScheduledDeploy", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("CreatedByUserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ErrorMessage")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid?>("JobId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<bool>("NotifyOnComplete")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("NotifyOnStart")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid?>("PackageId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Recipients")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<DateTime>("ScheduledAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("SiteId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("StartedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedByUserId");
+
+                    b.HasIndex("JobId");
+
+                    b.HasIndex("PackageId");
+
+                    b.HasIndex("SiteId");
+
+                    b.ToTable("ScheduledDeploys");
+                });
+
             modelBuilder.Entity("DeployManager.Domain.Entities.User", b =>
                 {
                     b.Property<Guid>("Id")
@@ -608,6 +785,76 @@ namespace DeployManager.Infrastructure.Migrations
                     b.Navigation("Environment");
                 });
 
+            modelBuilder.Entity("DeployManager.Domain.Entities.RollbackExecution", b =>
+                {
+                    b.HasOne("DeployManager.Domain.Entities.User", "ExecutedByUser")
+                        .WithMany()
+                        .HasForeignKey("ExecutedByUserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("DeployManager.Domain.Entities.DeployJob", "OriginalExecution")
+                        .WithMany()
+                        .HasForeignKey("OriginalExecutionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("DeployManager.Domain.Entities.DeploySite", "Site")
+                        .WithMany()
+                        .HasForeignKey("SiteId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("ExecutedByUser");
+
+                    b.Navigation("OriginalExecution");
+
+                    b.Navigation("Site");
+                });
+
+            modelBuilder.Entity("DeployManager.Domain.Entities.RollbackExecutionDetail", b =>
+                {
+                    b.HasOne("DeployManager.Domain.Entities.RollbackExecution", "RollbackExecution")
+                        .WithMany("Details")
+                        .HasForeignKey("RollbackExecutionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("RollbackExecution");
+                });
+
+            modelBuilder.Entity("DeployManager.Domain.Entities.ScheduledDeploy", b =>
+                {
+                    b.HasOne("DeployManager.Domain.Entities.User", "CreatedByUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("DeployManager.Domain.Entities.DeployJob", "Job")
+                        .WithMany()
+                        .HasForeignKey("JobId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("DeployManager.Domain.Entities.DeployPackage", "Package")
+                        .WithMany()
+                        .HasForeignKey("PackageId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("DeployManager.Domain.Entities.DeploySite", "Site")
+                        .WithMany()
+                        .HasForeignKey("SiteId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("CreatedByUser");
+
+                    b.Navigation("Job");
+
+                    b.Navigation("Package");
+
+                    b.Navigation("Site");
+                });
+
             modelBuilder.Entity("DeployManager.Domain.Entities.DeployJob", b =>
                 {
                     b.Navigation("Backups");
@@ -623,6 +870,11 @@ namespace DeployManager.Infrastructure.Migrations
             modelBuilder.Entity("DeployManager.Domain.Entities.DeploymentMode", b =>
                 {
                     b.Navigation("RuleSets");
+                });
+
+            modelBuilder.Entity("DeployManager.Domain.Entities.RollbackExecution", b =>
+                {
+                    b.Navigation("Details");
                 });
 #pragma warning restore 612, 618
         }

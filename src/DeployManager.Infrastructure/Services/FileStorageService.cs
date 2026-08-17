@@ -5,17 +5,16 @@ namespace DeployManager.Infrastructure.Services;
 
 public class FileStorageService : IFileStorageService
 {
-    private readonly string _basePath;
+    private readonly IStoragePathProvider _paths;
 
-    public FileStorageService()
+    public FileStorageService(IStoragePathProvider paths)
     {
-        _basePath = Path.Combine(Path.GetTempPath(), "DeployManager");
-        Directory.CreateDirectory(_basePath);
+        _paths = paths;
     }
 
     public string SavePackage(string packageId, string fileName, Stream content)
     {
-        var packageDir = Path.Combine(_basePath, "packages", packageId);
+        var packageDir = _paths.GetPackagesPath(Guid.Parse(packageId));
         Directory.CreateDirectory(packageDir);
 
         var filePath = Path.Combine(packageDir, fileName);

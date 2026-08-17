@@ -8,18 +8,28 @@ namespace DeployManager.Infrastructure.Data;
 
 public static class DbSeeder
 {
-    public static async Task SeedAsync(DeployDbContext context, IPasswordService passwordService)
+    public static async Task SeedAsync(
+        DeployDbContext context,
+        IPasswordService passwordService,
+        string adminUsername,
+        string adminEmail,
+        string adminPassword,
+        CancellationToken cancellationToken = default)
     {
-        await context.Database.MigrateAsync();
+        await context.Database.MigrateAsync(cancellationToken);
 
-        if (await context.Users.AnyAsync())
+        if (await context.Users.AnyAsync(cancellationToken))
             return;
+
+        if (string.IsNullOrWhiteSpace(adminPassword))
+            throw new InvalidOperationException(
+                "AdminUser:Password is required on first startup to create the initial administrator user. Set it via configuration (e.g. Azure App Settings).");
 
         var admin = new User
         {
-            Username = "admin",
-            Email = "admin@deploymanager.com",
-            PasswordHash = passwordService.Hash("Admin123!"),
+            Username = string.IsNullOrWhiteSpace(adminUsername) ? "admin" : adminUsername,
+            Email = string.IsNullOrWhiteSpace(adminEmail) ? "admin@deploymanager.com" : adminEmail,
+            PasswordHash = passwordService.Hash(adminPassword),
             Role = Roles.Administrator,
             IsActive = true
         };

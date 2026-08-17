@@ -9,6 +9,7 @@ import {
   Upload,
   Clock,
   RotateCcw,
+  CalendarClock,
   Settings,
   Menu,
   X,
@@ -37,6 +38,7 @@ const NAV_ITEMS: NavItem[] = [
   { icon: Upload, label: 'Nuevo Despliegue', path: '/new-deploy' },
   { icon: Clock, label: 'Historial', path: '/history' },
   { icon: RotateCcw, label: 'Rollback', path: '/rollback' },
+  { icon: CalendarClock, label: 'Programados', path: '/scheduled-deploys' },
   { icon: Settings, label: 'Configuración', path: '/settings' },
 ]
 

@@ -1,12 +1,15 @@
 import { useState } from 'react'
 import Swal from 'sweetalert2'
+import { RotateCcw } from 'lucide-react'
 import { PageHeader } from '@/shared/ui/PageHeader'
 import { LoadingState } from '@/shared/ui/LoadingState'
 import { EmptyState } from '@/shared/ui/EmptyState'
 import { StatusBadge } from '@/shared/ui/StatusBadge'
+import { Modal } from '@/shared/ui/Modal'
 import { MetricCard } from '@/shared/ui/MetricCard'
 import { useDeployJobs } from '@/shared/hooks/useDeployJobs'
 import { useEnvironments } from '@/shared/hooks/useEnvironments'
+import { useRollbackPreview, useExecuteRollback } from '@/shared/hooks/useRollback'
 import type { DeployJobsQueryParams } from '@/shared/types/deployJob'
 
 const STATUS_OPTIONS = ['', 'Pending', 'InProgress', 'Completed', 'Failed', 'RolledBack'] as const
@@ -30,6 +33,10 @@ export function HistoryPage() {
   const [filters, setFilters] = useState<DeployJobsQueryParams>({})
   const { data: jobs, isLoading } = useDeployJobs(filters)
   const { data: environments } = useEnvironments()
+  const executeRollback = useExecuteRollback()
+  const [rollbackJobId, setRollbackJobId] = useState<string | null>(null)
+  const [reason, setReason] = useState('')
+  const { data: rollbackPreview } = useRollbackPreview(rollbackJobId || '')
 
   const totalJobs = jobs?.length ?? 0
   const completed = jobs?.filter((j) => j.status === 'Completed').length ?? 0
@@ -116,6 +123,7 @@ export function HistoryPage() {
                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Estado</th>
                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Duración</th>
                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Fecha</th>
+                <th className="px-6 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-400">Acciones</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
@@ -158,12 +166,126 @@ export function HistoryPage() {
                   <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
                     {new Date(job.createdAt).toLocaleDateString()}
                   </td>
+                  <td className="whitespace-nowrap px-6 py-4 text-right text-sm">
+                    {job.status === 'Completed' && (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setRollbackJobId(job.id); setReason('') }}
+                        className="inline-flex items-center gap-1 rounded-md px-2.5 py-1.5 text-xs font-medium text-red-600 transition-colors hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/30"
+                      >
+                        <RotateCcw className="h-3.5 w-3.5" />
+                        Rollback
+                      </button>
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
       )}
+
+      <Modal open={!!rollbackJobId} onClose={() => { setRollbackJobId(null); setReason('') }} title="Previsualización de Rollback" size="xl">
+        {rollbackPreview ? (
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4 rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
+              <div>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Sitio</p>
+                <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{rollbackPreview.siteName}</p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Entorno</p>
+                <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{rollbackPreview.environmentName}</p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Archivo</p>
+                <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{rollbackPreview.fileName}</p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Archivos a restaurar</p>
+                <p className="text-sm font-medium text-green-600">{rollbackPreview.filesToRestore}</p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Archivos a eliminar</p>
+                <p className="text-sm font-medium text-red-600">{rollbackPreview.filesToDelete}</p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Total</p>
+                <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{rollbackPreview.totalFiles} archivos</p>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                Motivo del rollback <span className="text-red-500">*</span>
+              </label>
+              <textarea
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+                rows={3}
+                maxLength={500}
+                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200"
+                placeholder="Describa el motivo del rollback..."
+              />
+            </div>
+
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => { setRollbackJobId(null); setReason('') }}
+                className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={async () => {
+                  if (!rollbackJobId || !reason.trim()) return
+
+                  const result = await Swal.fire({
+                    title: '¿Confirmar Rollback?',
+                    text: `Se revertirán ${rollbackPreview.totalFiles} archivos. Esta acción no se puede deshacer.`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#ef4444',
+                    cancelButtonColor: '#6b7280',
+                    confirmButtonText: 'Sí, ejecutar rollback',
+                    cancelButtonText: 'Cancelar',
+                  })
+
+                  if (!result.isConfirmed) return
+
+                  try {
+                    await executeRollback.mutateAsync({
+                      originalDeployJobId: rollbackJobId,
+                      reason: reason.trim(),
+                    })
+                    await Swal.fire({
+                      icon: 'success',
+                      title: 'Rollback ejecutado',
+                      text: 'Rollback ejecutado correctamente',
+                      timer: 3000,
+                    })
+                    setRollbackJobId(null)
+                    setReason('')
+                  } catch (error) {
+                    const msg = error instanceof Error ? error.message : 'Ocurrió un error inesperado'
+                    await Swal.fire({
+                      icon: 'error',
+                      title: 'Error',
+                      text: msg,
+                    })
+                  }
+                }}
+                disabled={!reason.trim() || executeRollback.isPending}
+                className="inline-flex items-center gap-2 rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <RotateCcw className="h-4 w-4" />
+                {executeRollback.isPending ? 'Ejecutando...' : 'Ejecutar Rollback'}
+              </button>
+            </div>
+          </div>
+        ) : (
+          <LoadingState message="Cargando previsualización..." />
+        )}
+      </Modal>
     </div>
   )
 }

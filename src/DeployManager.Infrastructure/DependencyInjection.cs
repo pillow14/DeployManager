@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using DeployManager.Application.Common.Interfaces;
+using DeployManager.Application.Common.Options;
 using DeployManager.Domain.Interfaces;
 using DeployManager.Infrastructure.Data;
 using DeployManager.Infrastructure.Fakes;
@@ -14,6 +15,9 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
+        services.Configure<StorageOptions>(configuration.GetSection(StorageOptions.SectionName));
+        services.AddSingleton<IStoragePathProvider, StoragePathProvider>();
+
         var provider = configuration["DatabaseProvider"] ?? "SqlServer";
 
         if (provider.Equals("InMemory", StringComparison.OrdinalIgnoreCase))
@@ -40,6 +44,24 @@ public static class DependencyInjection
         services.AddScoped<IDeployTarget, UncDeployTarget>();
         services.AddScoped<IDeployTarget, FtpDeployTarget>();
         services.AddScoped<IDeployTarget, AzureKuduDeployTarget>();
+
+        services.AddScoped<IBackupManifestService, BackupManifestService>();
+        services.AddScoped<IRollbackService, RollbackService>();
+        services.AddSingleton<IRollbackSettings>(sp =>
+        {
+            var config = sp.GetRequiredService<IConfiguration>();
+            var section = config.GetSection("Rollback");
+            return new RollbackSettings(
+                section.GetValue<bool>("DeleteFilesCreatedByDeploy", true),
+                section.GetValue<bool>("AllowPartialRollback", false),
+                section.GetValue<bool>("BackupBeforeRollback", true));
+        });
+        services.AddScoped<IDeployTargetFactory, DeployTargetFactory>();
+
+        services.AddSingleton<Microsoft.Extensions.Hosting.IHostedService, ScheduledDeployWorker>();
+        services.AddSingleton<Microsoft.Extensions.Hosting.IHostedService, DeployJobWorker>();
+
+        services.AddScoped<IEmailService, EmailService>();
 
         return services;
     }
