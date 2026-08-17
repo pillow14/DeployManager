@@ -1,0 +1,83 @@
+name: CI
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DOTNET_VERSION: '8.0.x'
+  NODE_VERSION: '20.x'
+
+jobs:
+  build-backend:
+    name: Build Backend
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj') }}
+          restore-keys: nuget-${{ runner.os }}-
+
+      - name: Restore
+        run: dotnet restore src/src.sln
+
+      - name: Build
+        run: dotnet build src/src.sln -c Release --no-restore
+
+  build-frontend:
+    name: Build Frontend
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: src/DeployManager.Client/package-lock.json
+
+      - name: Install dependencies
+        working-directory: src/DeployManager.Client
+        run: npm ci
+
+      - name: Lint
+        working-directory: src/DeployManager.Client
+        run: npm run lint
+
+      - name: Type check + Build
+        working-directory: src/DeployManager.Client
+        run: npm run build
+
+  ci-status:
+    name: CI Status
+    if: always()
+    needs: [build-backend, build-frontend]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check results
+        run: |
+          if [ "${{ needs.build-backend.result }}" != "success" ] || [ "${{ needs.build-frontend.result }}" != "success" ]; then
+            echo "CI failed:"
+            echo "  Backend: ${{ needs.build-backend.result }}"
+            echo "  Frontend: ${{ needs.build-frontend.result }}"
+            exit 1
+          fi
+          echo "CI passed"
