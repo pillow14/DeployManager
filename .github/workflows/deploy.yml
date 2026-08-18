@@ -71,7 +71,7 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ${{ runner.temp }}/publish/
           server-dir: /site/wwwroot/
-          delete-remote: true
+          dangerous-clean-slate: true
           exclude: |
             **/.git*
             **/appsettings.Development*
