@@ -13,10 +13,6 @@ env:
   DOTNET_VERSION: '8.0.x'
   NODE_VERSION: '24.x'
 
-permissions:
-  id-token: write
-  contents: read
-
 jobs:
   build:
     name: Build
@@ -67,27 +63,28 @@ jobs:
           name: deploy-package
           path: ${{ runner.temp }}/publish
 
-      - name: Azure Login
-        uses: azure/login@v2
+      - name: Deploy via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.8
         with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-
-      - name: Deploy to Azure App Service
-        uses: azure/webapps-deploy@v3
-        with:
-          app-name: ${{ secrets.AZURE_WEBAPP_NAME }}
-          package: ${{ runner.temp }}/publish
-
-      - name: Logout
-        run: az logout
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ${{ runner.temp }}/publish/
+          server-dir: /site/wwwroot/
+          delete-remote: true
+          exclude: |
+            **/.git*
+            **/appsettings.Development*
+            **/appsettings.*.local.json
 
       - name: Wait for app to start
         run: sleep 30
 
       - name: Health check
         run: |
+          APP_URL="https://${{ secrets.AZURE_WEBAPP_NAME }}.azurewebsites.net"
           for i in 1 2 3 4 5; do
-            STATUS=$(curl -s -o /dev/null -w "%{http_code}" "https://${{ secrets.AZURE_WEBAPP_NAME }}.azurewebsites.net/health" || true)
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$APP_URL/health" || true)
             if [ "$STATUS" = "200" ]; then
               echo "Health check passed (HTTP $STATUS)"
               exit 0
