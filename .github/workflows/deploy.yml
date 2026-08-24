@@ -42,7 +42,7 @@ jobs:
         run: npm run build
 
       - name: Publish backend
-        run: dotnet publish src/DeployManager.Api/DeployManager.Api.csproj -c Release -r win-x64 --self-contained false -o ${{ runner.temp }}/publish
+        run: dotnet publish src/DeployManager.Api/DeployManager.Api.csproj -c Release -o ${{ runner.temp }}/publish
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
