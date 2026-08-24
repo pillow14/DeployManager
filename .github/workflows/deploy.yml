@@ -63,20 +63,24 @@ jobs:
           name: deploy-package
           path: ${{ runner.temp }}/publish
 
-      - name: Deploy via FTP
-        uses: SamKirkland/FTP-Deploy-Action@v4.4.0
-        with:
-          server: ${{ secrets.FTP_HOST }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ftps
-          local-dir: ${{ runner.temp }}/publish/
-          server-dir: /site/wwwroot/
-          timeout: 60000
-          exclude: |
-            **/.git*
-            **/appsettings.Development*
-            **/appsettings.*.local.json
+      - name: Zip artifact
+        run: cd ${{ runner.temp }}/publish && zip -r ${{ runner.temp }}/deploy.zip .
+
+      - name: Azure Login
+        run: |
+          az login --service-principal \
+            --username "${{ secrets.AZURE_CLIENT_ID }}" \
+            --password "${{ secrets.AZURE_CLIENT_SECRET }}" \
+            --tenant "${{ secrets.AZURE_TENANT_ID }}"
+
+      - name: Deploy to Azure
+        run: |
+          az webapp deploy \
+            --name "${{ secrets.AZURE_WEBAPP_NAME }}" \
+            --resource-group "valgreti_grupo1" \
+            --src-path "${{ runner.temp }}/deploy.zip" \
+            --type zip \
+            --clean true
 
       - name: Wait for app to start
         run: sleep 30
@@ -95,6 +99,9 @@ jobs:
           done
           echo "Health check failed after 5 attempts"
           exit 1
+
+      - name: Logout
+        run: az logout
 
   notify:
     name: Notify
