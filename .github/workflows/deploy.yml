@@ -67,11 +67,7 @@ jobs:
         run: cd ${{ runner.temp }}/publish && zip -r ${{ runner.temp }}/deploy.zip .
 
       - name: Azure Login
-        run: |
-          az login --service-principal \
-            --username "${{ secrets.AZURE_CLIENT_ID }}" \
-            --password "${{ secrets.AZURE_CLIENT_SECRET }}" \
-            --tenant "${{ secrets.AZURE_TENANT_ID }}"
+        run: az login --service-principal -u $(echo ${{ secrets.AZURE_CREDENTIALS }} | jq -r .clientId) -p $(echo ${{ secrets.AZURE_CREDENTIALS }} | jq -r .clientSecret) --tenant $(echo ${{ secrets.AZURE_CREDENTIALS }} | jq -r .tenantId)
 
       - name: Deploy to Azure
         run: |
