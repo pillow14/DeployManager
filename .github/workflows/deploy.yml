@@ -72,7 +72,7 @@ jobs:
           protocol: ftps
           local-dir: ${{ runner.temp }}/publish/
           server-dir: /site/wwwroot/
-          dangerous-clean-slate: true
+          timeout: 60000
           exclude: |
             **/.git*
             **/appsettings.Development*
