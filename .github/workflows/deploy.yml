@@ -63,22 +63,20 @@ jobs:
           name: deploy-package
           path: ${{ runner.temp }}/publish
 
-      - name: Zip artifact
-        run: cd ${{ runner.temp }}/publish && zip -r ${{ runner.temp }}/deploy.zip .
-
-      - name: Azure Login
-        env:
-          AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
-        run: echo "$AZURE_CREDENTIALS" > ${{ runner.temp }}/creds.json && az login --service-principal --username "$(jq -r .clientId ${{ runner.temp }}/creds.json)" --password "$(jq -r .clientSecret ${{ runner.temp }}/creds.json)" --tenant "$(jq -r .tenantId ${{ runner.temp }}/creds.json)"
-
-      - name: Deploy to Azure
-        run: |
-          az webapp deploy \
-            --name "${{ secrets.AZURE_WEBAPP_NAME }}" \
-            --resource-group "valgreti_grupo1" \
-            --src-path "${{ runner.temp }}/deploy.zip" \
-            --type zip \
-            --clean true
+      - name: Deploy via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.4.0
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftps
+          local-dir: ${{ runner.temp }}/publish/
+          server-dir: /site/wwwroot/
+          timeout: 120000
+          exclude: |
+            **/.git*
+            **/appsettings.Development*
+            **/appsettings.*.local.json
 
       - name: Wait for app to start
         run: sleep 30
@@ -97,9 +95,6 @@ jobs:
           done
           echo "Health check failed after 5 attempts"
           exit 1
-
-      - name: Logout
-        run: az logout
 
   notify:
     name: Notify
