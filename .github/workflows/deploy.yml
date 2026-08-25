@@ -63,20 +63,23 @@ jobs:
           name: deploy-package
           path: ${{ runner.temp }}/publish
 
-      - name: Deploy via FTP
-        uses: SamKirkland/FTP-Deploy-Action@v4.4.0
+      - name: Zip artifact
+        working-directory: ${{ runner.temp }}/publish
+        run: zip -r ${{ runner.temp }}/deploy.zip .
+
+      - name: Azure Login
+        uses: azure/login@v2
         with:
-          server: ${{ secrets.FTP_HOST }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ftps
-          local-dir: ${{ runner.temp }}/publish/
-          server-dir: /site/wwwroot/
-          timeout: 120000
-          exclude: |
-            **/.git*
-            **/appsettings.Development*
-            **/appsettings.*.local.json
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Deploy to Azure
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ secrets.AZURE_WEBAPP_NAME }}
+          package: ${{ runner.temp }}/deploy.zip
 
       - name: Wait for app to start
         run: sleep 30
