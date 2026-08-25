@@ -17,23 +17,23 @@ export function Button({
   ...props
 }: ButtonProps) {
   const variants = {
-    primary: 'bg-blue-600 text-white hover:bg-blue-700',
-    secondary: 'bg-gray-600 text-white hover:bg-gray-700',
-    outline: 'border border-gray-300 text-gray-700 hover:bg-gray-50',
-    ghost: 'text-gray-700 hover:bg-gray-100',
-    danger: 'bg-red-600 text-white hover:bg-red-700',
+    primary: 'bg-primary-container text-on-primary-container font-bold hover:opacity-90 active:scale-95 shadow-[0_0_15px_rgba(0,255,159,0.3)]',
+    secondary: 'bg-surface-container-high text-on-surface border border-outline-variant hover:bg-surface-container-highest hover:border-primary-container/50',
+    outline: 'border border-outline-variant text-on-surface hover:bg-surface-container-high hover:border-outline',
+    ghost: 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface',
+    danger: 'bg-error text-on-error font-bold hover:opacity-90',
   }
 
   const sizes = {
-    sm: 'px-3 py-1.5 text-sm',
-    md: 'px-4 py-2 text-sm',
-    lg: 'px-6 py-3 text-base',
+    sm: 'px-sm py-1 text-label-code',
+    md: 'px-lg py-sm text-body-sm',
+    lg: 'px-lg py-md text-body-lg',
   }
 
   return (
     <button
       className={cn(
-        'inline-flex items-center justify-center rounded-md font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none',
+        'inline-flex items-center justify-center gap-xs rounded-lg font-medium transition-all duration-200 focus:outline-none disabled:opacity-50 disabled:pointer-events-none',
         variants[variant],
         sizes[size],
         className,
@@ -43,10 +43,7 @@ export function Button({
       {...props}
     >
       {isLoading && (
-        <svg className="animate-spin -ml-1 mr-2 h-4 w-4" aria-hidden="true" fill="none" viewBox="0 0 24 24">
-          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-        </svg>
+        <span className="material-symbols-outlined animate-spin text-[18px]">progress_activity</span>
       )}
       {children}
     </button>

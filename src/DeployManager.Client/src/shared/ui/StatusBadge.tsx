@@ -7,50 +7,50 @@ interface StatusBadgeProps {
 }
 
 const statusColors: Record<string, string> = {
-  active: 'bg-green-50 text-green-700 border border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800',
-  inactive: 'bg-gray-50 text-gray-600 border border-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700',
-  success: 'bg-green-50 text-green-700 border border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800',
-  completed: 'bg-green-50 text-green-700 border border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800',
-  failed: 'bg-red-50 text-red-700 border border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800',
-  error: 'bg-red-50 text-red-700 border border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800',
-  pending: 'bg-yellow-50 text-yellow-700 border border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-400 dark:border-yellow-800',
-  inprogress: 'bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800',
-  rolledback: 'bg-purple-50 text-purple-700 border border-purple-200 dark:bg-purple-900/30 dark:text-purple-400 dark:border-purple-800',
-  executing: 'bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800',
-  cancelled: 'bg-gray-50 text-gray-600 border border-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700',
-  enabled: 'bg-green-50 text-green-700 border border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800',
-  disabled: 'bg-gray-50 text-gray-600 border border-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700',
+  active: 'bg-primary-container/10 text-primary-container border border-primary-container',
+  inactive: 'bg-surface-container-high text-on-surface-variant border border-outline-variant',
+  success: 'bg-primary-container/10 text-primary-container border border-primary-container',
+  completed: 'bg-primary-container/10 text-primary-container border border-primary-container',
+  failed: 'bg-error/10 text-error border border-error',
+  error: 'bg-error/10 text-error border border-error',
+  pending: 'bg-surface-container-high text-on-surface-variant border border-outline-variant',
+  inprogress: 'bg-secondary-container/10 text-secondary-container border border-secondary-container animate-pulse',
+  rolledback: 'bg-tertiary-container/10 text-tertiary-container border border-tertiary-container',
+  executing: 'bg-secondary-container/10 text-secondary-container border border-secondary-container animate-pulse',
+  cancelled: 'bg-surface-container-high text-outline border border-outline-variant',
+  enabled: 'bg-primary-container/10 text-primary-container border border-primary-container',
+  disabled: 'bg-surface-container-high text-outline border border-outline-variant',
 }
 
 const dotColors: Record<string, string> = {
-  active: 'bg-green-500',
-  inactive: 'bg-gray-400',
-  success: 'bg-green-500',
-  completed: 'bg-green-500',
-  failed: 'bg-red-500',
-  error: 'bg-red-500',
-  pending: 'bg-yellow-500',
-  inprogress: 'bg-blue-500',
-  rolledback: 'bg-purple-500',
-  executing: 'bg-blue-500',
-  cancelled: 'bg-gray-400',
-  enabled: 'bg-green-500',
-  disabled: 'bg-gray-400',
+  active: 'bg-primary-container shadow-[0_0_8px_rgba(0,255,159,0.8)]',
+  inactive: 'bg-outline',
+  success: 'bg-primary-container shadow-[0_0_8px_rgba(0,255,159,0.8)]',
+  completed: 'bg-primary-container shadow-[0_0_8px_rgba(0,255,159,0.8)]',
+  failed: 'bg-error shadow-[0_0_8px_rgba(255,180,171,0.8)]',
+  error: 'bg-error shadow-[0_0_8px_rgba(255,180,171,0.8)]',
+  pending: 'bg-outline',
+  inprogress: 'bg-secondary-container shadow-[0_0_8px_rgba(0,227,253,0.8)]',
+  rolledback: 'bg-tertiary-container',
+  executing: 'bg-secondary-container shadow-[0_0_8px_rgba(0,227,253,0.8)]',
+  cancelled: 'bg-outline',
+  enabled: 'bg-primary-container shadow-[0_0_8px_rgba(0,255,159,0.8)]',
+  disabled: 'bg-outline',
 }
 
 export function StatusBadge({ status, dot, className }: StatusBadgeProps) {
   const normalized = status.toLowerCase().replace(/\s+/g, '')
-  const colorClass = statusColors[normalized] ?? 'bg-gray-50 text-gray-700 border border-gray-200'
+  const colorClass = statusColors[normalized] ?? 'bg-surface-container-high text-on-surface-variant border border-outline-variant'
 
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium',
+        'inline-flex items-center gap-1.5 rounded px-sm py-1 text-label-code font-medium',
         colorClass,
         className,
       )}
     >
-      {dot && <span className={cn('h-1.5 w-1.5 rounded-full', dotColors[normalized] ?? 'bg-gray-400')} />}
+      {dot && <span className={cn('h-2 w-2 rounded-full', dotColors[normalized] ?? 'bg-outline')} />}
       {status}
     </span>
   )

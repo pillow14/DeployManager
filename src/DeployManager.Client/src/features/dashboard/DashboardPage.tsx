@@ -1,5 +1,4 @@
 import { useNavigate } from 'react-router-dom'
-import { Server, Globe, CheckCircle, AlertCircle, Clock, Upload } from 'lucide-react'
 import { MetricCard } from '@/shared/ui/MetricCard'
 import { StatusBadge } from '@/shared/ui/StatusBadge'
 import { Button } from '@/shared/components/Button'
@@ -7,7 +6,7 @@ import { CardSkeleton } from '@/shared/ui/Skeleton'
 import { useDeploySites } from '@/shared/hooks/useDeploySites'
 import { useEnvironments } from '@/shared/hooks/useEnvironments'
 import { useDeployJobs } from '@/shared/hooks/useDeployJobs'
-import { PageHeader } from '@/shared/ui/PageHeader'
+
 
 export function DashboardPage() {
   const navigate = useNavigate()
@@ -28,120 +27,162 @@ export function DashboardPage() {
   const isLoading = sitesLoading || jobsLoading
 
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Panel Principal"
-        description="Resumen de tu infraestructura de despliegue"
-        border={false}
-        actions={
-          <Button onClick={() => navigate('/new-deploy')} variant="primary">
-            <Upload className="mr-2 h-4 w-4" />
-            Nuevo Despliegue
-          </Button>
-        }
-      />
+    <div className="space-y-xl">
+      <div className="flex justify-between items-end mb-xl animate-fade-in">
+        <div>
+          <h2 className="text-headline-lg text-on-surface tracking-tight">Dashboard principal</h2>
+          <p className="text-body-lg text-on-surface-variant">Resumen operativo de tus infraestructuras .NET</p>
+        </div>
+        <Button onClick={() => navigate('/new-deploy')}>
+          <span className="material-symbols-outlined text-[18px]">add</span>
+          Nuevo despliegue
+        </Button>
+      </div>
 
       {isLoading ? (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-gutter">
           {Array.from({ length: 4 }).map((_, i) => <CardSkeleton key={i} />)}
         </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-gutter animate-fade-in delay-200">
           <MetricCard
             label="Total Sitios"
             value={totalSites}
-            icon={<Server className="h-5 w-5" />}
+            icon={<span className="material-symbols-outlined">language</span>}
             trend={activeSites > 0 ? { direction: 'up', value: `${activeSites} activos` } : undefined}
-          />
-          <MetricCard
-            label="Entornos"
-            value={totalEnvs}
-            icon={<Globe className="h-5 w-5" />}
           />
           <MetricCard
             label="Despliegues Exitosos"
             value={successfulDeploys}
-            icon={<CheckCircle className="h-5 w-5" />}
+            icon={<span className="material-symbols-outlined">check_circle</span>}
             variant="success"
           />
           <MetricCard
-            label="Despliegues Fallidos"
+            label="Fallidos"
             value={failedDeploys}
-            icon={<AlertCircle className="h-5 w-5" />}
+            icon={<span className="material-symbols-outlined">error</span>}
             variant="danger"
           />
           <MetricCard
-            label="Despliegues Pendientes"
+            label="Pendientes"
             value={pendingDeploys}
-            icon={<Clock className="h-5 w-5" />}
+            icon={<span className="material-symbols-outlined">schedule</span>}
             variant="warning"
           />
         </div>
       )}
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2">
-          <div className="rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
-            <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4 dark:border-gray-700">
-              <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100">Despliegues Recientes</h3>
-              <Button variant="outline" size="sm" onClick={() => navigate('/history')}>
-                Ver todos
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-gutter animate-fade-in delay-300">
+        <div className="lg:col-span-2 bg-surface-container border border-outline-variant rounded-xl shadow-sm overflow-hidden flex flex-col">
+          <div className="p-lg border-b border-outline-variant flex justify-between items-center bg-surface-container-low">
+            <h3 className="text-title-md text-on-surface">Despliegues Recientes</h3>
+            <button
+              className="text-primary-container font-bold text-label-code hover:underline"
+              onClick={() => navigate('/history')}
+            >
+              Ver historial completo
+            </button>
+          </div>
+          {recentJobs.length === 0 ? (
+            <div className="flex flex-col items-center py-12 text-center">
+              <span className="material-symbols-outlined text-4xl text-outline mb-3">rocket_launch</span>
+              <p className="text-body-sm text-outline">Aún no hay despliegues</p>
+              <Button size="sm" className="mt-3" onClick={() => navigate('/new-deploy')}>
+                Iniciar primer despliegue
               </Button>
             </div>
-            {recentJobs.length === 0 ? (
-              <div className="flex flex-col items-center py-12 text-center">
-                <Upload className="mb-3 h-8 w-8 text-gray-300" />
-                <p className="text-sm text-gray-500">Aún no hay despliegues</p>
-                <Button variant="primary" size="sm" className="mt-3" onClick={() => navigate('/new-deploy')}>
-                  Iniciar primer despliegue
-                </Button>
-              </div>
-            ) : (
-              <div className="divide-y divide-gray-100 dark:divide-gray-800">
-                {recentJobs.map((job) => (
-                  <div key={job.id} className="flex items-center justify-between px-5 py-3.5 hover:bg-gray-50 dark:hover:bg-gray-800/50">
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium text-gray-900 dark:text-gray-200">{job.siteName ?? job.id}</p>
-                      <p className="text-xs text-gray-500">
-                        {job.environmentName} &middot; {new Date(job.createdAt).toLocaleString()}
-                      </p>
-                    </div>
-                    <StatusBadge status={job.status} dot />
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left">
+                <thead>
+                  <tr className="border-b border-outline-variant bg-surface-container-lowest">
+                    <th className="px-lg py-md text-label-code font-bold text-on-surface-variant uppercase tracking-wider">Sitio</th>
+                    <th className="px-lg py-md text-label-code font-bold text-on-surface-variant uppercase tracking-wider">Fecha</th>
+                    <th className="px-lg py-md text-label-code font-bold text-on-surface-variant uppercase tracking-wider">Ambiente</th>
+                    <th className="px-lg py-md text-label-code font-bold text-on-surface-variant uppercase tracking-wider">Estado</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-outline-variant">
+                  {recentJobs.map((job) => (
+                    <tr key={job.id} className="hover:bg-surface-container-high transition-colors group cursor-pointer" onClick={() => navigate('/history')}>
+                      <td className="px-lg py-md">
+                        <div className="flex flex-col">
+                          <span className="font-bold text-on-surface group-hover:text-primary-container transition-colors">{job.siteName ?? job.id}</span>
+                          <span className="text-label-code text-outline">{job.fileName}</span>
+                        </div>
+                      </td>
+                      <td className="px-lg py-md text-body-sm text-on-surface-variant">
+                        {new Date(job.createdAt).toLocaleString('es-CL')}
+                      </td>
+                      <td className="px-lg py-md">
+                        <span className="px-sm py-1 bg-secondary-container/10 border border-secondary-container/30 text-secondary-container rounded text-label-code">
+                          {job.environmentName}
+                        </span>
+                      </td>
+                      <td className="px-lg py-md">
+                        <StatusBadge status={job.status} dot />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
 
-        <div>
-          <div className="rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
-            <div className="border-b border-gray-100 px-5 py-4 dark:border-gray-700">
-              <h3 className="text-base font-semibold text-gray-900 dark:text-gray-100">Infraestructura</h3>
+        <div className="flex flex-col gap-gutter">
+          <div className="bg-surface-container border border-outline-variant rounded-xl shadow-sm p-lg">
+            <div className="flex items-center justify-between mb-lg">
+              <h3 className="text-title-md text-on-surface">Infraestructura</h3>
+              <span className="material-symbols-outlined text-outline">settings</span>
             </div>
-            <div className="divide-y divide-gray-100 dark:divide-gray-800">
+            <div className="space-y-md">
               {totalEnvs === 0 ? (
-                <div className="px-5 py-8 text-center text-sm text-gray-500">
+                <div className="text-center text-body-sm text-outline py-4">
                   No hay entornos configurados
                 </div>
               ) : (
                 environments?.map((env) => (
-                  <div key={env.id} className="flex items-center justify-between px-5 py-3.5">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gray-50 dark:bg-gray-800">
-                        <Globe className="h-4 w-4 text-gray-500" />
+                  <div key={env.id} className="flex items-center justify-between p-md bg-surface-container-lowest rounded-lg border border-outline-variant hover:border-primary-container/30 transition-colors">
+                    <div className="flex items-center gap-md">
+                      <div className="w-10 h-10 rounded bg-surface-container-high border border-outline-variant flex items-center justify-center">
+                        <span className="material-symbols-outlined text-primary-container">cloud</span>
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-gray-900 dark:text-gray-200">{env.name}</p>
-                        <p className="text-xs text-gray-500">
+                        <p className="font-bold text-on-surface">{env.name}</p>
+                        <p className="text-label-code text-on-surface-variant">
                           {sites?.filter((s) => s.environmentId === env.id).length ?? 0} sitios
                         </p>
                       </div>
                     </div>
-                    <StatusBadge status={env.isActive ? 'Activo' : 'Inactivo'} dot />
+                    <div className="flex items-center gap-xs text-label-code text-primary-container font-bold">
+                      <StatusBadge status={env.isActive ? 'Activo' : 'Inactivo'} dot />
+                    </div>
                   </div>
                 ))
               )}
+            </div>
+          </div>
+
+          <div className="bg-surface-container border border-primary-container/30 rounded-xl p-lg flex flex-col gap-md relative overflow-hidden group">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary-container/10 to-transparent opacity-50" />
+            <div className="z-10">
+              <h4 className="font-bold text-title-md mb-xs text-primary-container">Estado del Sistema</h4>
+              <p className="text-body-sm text-on-surface mb-md">Tus servicios están respondiendo correctamente.</p>
+              <div className="flex items-center gap-lg">
+                <div>
+                  <div className="text-title-md font-bold text-on-surface">{totalSites}</div>
+                  <div className="text-label-code text-on-surface-variant">Sitios Activos</div>
+                </div>
+                <div className="w-px h-10 bg-outline-variant" />
+                <div>
+                  <div className="text-title-md font-bold text-on-surface">{totalEnvs}</div>
+                  <div className="text-label-code text-on-surface-variant">Entornos</div>
+                </div>
+              </div>
+            </div>
+            <div className="absolute -right-8 -bottom-8 opacity-10 text-primary-container group-hover:scale-110 transition-transform duration-500">
+              <span className="material-symbols-outlined" style={{ fontSize: '160px' }}>monitoring</span>
             </div>
           </div>
         </div>

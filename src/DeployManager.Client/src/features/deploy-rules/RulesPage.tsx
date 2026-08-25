@@ -2,21 +2,20 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Plus, Edit2, ToggleLeft, Trash2 } from 'lucide-react'
 import type { Resolver } from 'react-hook-form'
 import Swal from 'sweetalert2'
-import { PageHeader } from '@/shared/ui/PageHeader'
 import { LoadingState } from '@/shared/ui/LoadingState'
 import { EmptyState } from '@/shared/ui/EmptyState'
-import { StatusBadge } from '@/shared/ui/StatusBadge'
 import { Badge } from '@/shared/ui/Badge'
 import { Table } from '@/shared/ui/Table'
 import { Modal } from '@/shared/ui/Modal'
 import { Button } from '@/shared/components/Button'
 import { Input } from '@/shared/components/Input'
+import { Select } from '@/shared/components/Select'
 import { useDeployRules, useCreateDeployRule, useUpdateDeployRule, useDeleteDeployRule } from '@/shared/hooks/useDeployRules'
 import type { DeployRule } from '@/shared/types/deployRule'
 import type { Column } from '@/shared/ui/Table'
+import { MetricCard } from '@/shared/ui/MetricCard'
 
 const ACTIONS = [
   { value: 'copy_overwrite', label: 'Copiar y Sobrescribir' },
@@ -38,6 +37,14 @@ type RuleForm = z.infer<typeof ruleSchema>
 
 const actionLabels: Record<string, string> = {}
 ACTIONS.forEach((a) => { actionLabels[a.value] = a.label })
+
+const actionBadgeVariant: Record<string, 'success' | 'info' | 'purple' | 'danger' | 'default'> = {
+  copy_overwrite: 'success',
+  copy_if_not_exists: 'info',
+  omit: 'default',
+  backup_and_copy: 'purple',
+  delete_and_copy: 'danger',
+}
 
 export function RulesPage() {
   const { data: rules, isLoading } = useDeployRules()
@@ -121,25 +128,61 @@ export function RulesPage() {
     }
   }
 
+  const totalRules = rules?.length ?? 0
+  const activeRules = rules?.filter((r) => r.isActive).length ?? 0
+
   const columns: Column<DeployRule>[] = [
-    { key: 'order', header: 'Orden', cell: (r) => <span className="font-medium text-gray-900 dark:text-gray-100">{r.order}</span> },
-    { key: 'name', header: 'Nombre', cell: (r) => <span className="font-medium text-gray-900 dark:text-gray-100">{r.name}</span> },
-    { key: 'sourcePattern', header: 'Patrón Origen', cell: (r) => <code className="rounded bg-gray-100 px-1.5 py-0.5 text-xs text-gray-800 dark:bg-gray-800 dark:text-gray-200">{r.sourcePattern}</code> },
-    { key: 'destinationPath', header: 'Ruta Destino', className: 'max-w-[200px] truncate' },
-    { key: 'action', header: 'Acción', cell: (r) => <Badge variant="info">{actionLabels[r.action] ?? r.action}</Badge> },
-    { key: 'isActive', header: 'Estado', cell: (r) => <StatusBadge status={r.isActive ? 'Activo' : 'Inactivo'} dot /> },
     {
-      key: 'actions', header: 'Acciones', className: 'text-right',
+      key: 'order', header: 'Orden', className: 'w-16',
       cell: (r) => (
-        <div className="flex items-center justify-end gap-1">
-          <button onClick={() => openEdit(r)} className="rounded-md p-1.5 text-gray-400 hover:bg-gray-100 hover:text-blue-600 dark:hover:bg-gray-800 dark:hover:text-blue-400" title="Editar">
-            <Edit2 className="h-4 w-4" />
+        <span className="flex items-center gap-xs font-mono text-outline">
+          <span className="material-symbols-outlined text-[18px] cursor-grab text-outline hover:text-primary-fixed-dim transition-colors">drag_indicator</span>
+          {String(r.order).padStart(2, '0')}
+        </span>
+      ),
+    },
+    { key: 'name', header: 'Nombre regla', cell: (r) => <span className="font-semibold text-on-surface">{r.name}</span> },
+    {
+      key: 'sourcePattern', header: 'Patrón origen',
+      cell: (r) => (
+        <code className="font-mono bg-surface-container-lowest border border-primary-fixed-dim/30 text-primary-fixed-dim px-sm py-1 rounded shadow-[0_0_8px_rgba(0,227,141,0.2)] text-xs">
+          {r.sourcePattern}
+        </code>
+      ),
+    },
+    { key: 'destinationPath', header: 'Ruta destino', className: 'max-w-[200px] truncate', cell: (r) => <span className="font-mono text-on-surface-variant text-sm">{r.destinationPath}</span> },
+    {
+      key: 'action', header: 'Acción',
+      cell: (r) => <Badge variant={actionBadgeVariant[r.action] ?? 'default'}>{actionLabels[r.action] ?? r.action}</Badge>,
+    },
+    {
+      key: 'isActive', header: 'Activa', className: 'text-center',
+      cell: (r) => (
+        <div className="flex justify-center">
+          <button
+            onClick={() => handleToggle(r)}
+            className={`relative inline-flex h-5 w-10 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+              r.isActive
+                ? 'bg-primary-fixed-dim shadow-[0_0_10px_rgba(0,227,141,0.4)]'
+                : 'bg-surface-container-lowest border-outline'
+            }`}
+          >
+            <span className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-surface-container-lowest shadow ring-0 transition duration-200 ease-in-out ${
+              r.isActive ? 'translate-x-5' : 'translate-x-0'
+            }`} />
           </button>
-          <button onClick={() => handleToggle(r)} className="rounded-md p-1.5 text-gray-400 hover:bg-gray-100 hover:text-orange-600 dark:hover:bg-gray-800 dark:hover:text-orange-400" title={r.isActive ? 'Desactivar' : 'Activar'}>
-            <ToggleLeft className="h-4 w-4" />
+        </div>
+      ),
+    },
+    {
+      key: 'actions', header: '', className: 'text-right',
+      cell: (r) => (
+        <div className="flex items-center justify-end gap-sm opacity-0 group-hover:opacity-100 transition-opacity">
+          <button onClick={() => openEdit(r)} className="hover:text-primary-fixed-dim transition-colors" title="Editar">
+            <span className="material-symbols-outlined text-[20px]">edit</span>
           </button>
-          <button onClick={() => handleDelete(r)} className="rounded-md p-1.5 text-gray-400 hover:bg-gray-100 hover:text-red-600 dark:hover:bg-gray-800 dark:hover:text-red-400" title="Eliminar">
-            <Trash2 className="h-4 w-4" />
+          <button onClick={() => handleDelete(r)} className="hover:text-error transition-colors" title="Eliminar">
+            <span className="material-symbols-outlined text-[20px]">delete</span>
           </button>
         </div>
       ),
@@ -149,28 +192,87 @@ export function RulesPage() {
   if (isLoading) return <LoadingState message="Cargando reglas de despliegue..." />
 
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Reglas de Despliegue"
-        description="Define reglas de transformación de archivos aplicadas durante los despliegues"
-        actions={
-          <Button onClick={openCreate} variant="primary">
-            <Plus className="mr-2 h-4 w-4" /> Nueva Regla
-          </Button>
-        }
-      />
+    <div className="space-y-xl">
+      <div className="flex items-end justify-between mb-xl animate-fade-in">
+        <div>
+          <nav className="flex items-center gap-xs text-label-code text-outline mb-sm">
+            <span>Configuración</span>
+            <span className="material-symbols-outlined text-[14px]">chevron_right</span>
+            <span className="text-primary-fixed-dim">Reglas de despliegue</span>
+          </nav>
+          <h2 className="text-headline-lg text-on-surface">Reglas de despliegue</h2>
+          <p className="text-body-lg text-on-surface-variant max-w-2xl mt-xs">
+            Define el comportamiento de los archivos durante el proceso de sincronización entre el servidor de compilación y los entornos de destino.
+          </p>
+        </div>
+        <Button onClick={openCreate}>
+          <span className="material-symbols-outlined text-[18px]">add_circle</span>
+          Nueva Regla
+        </Button>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-gutter mb-xl animate-fade-in delay-100">
+        <MetricCard
+          label="Total Reglas"
+          value={totalRules}
+          icon={<span className="material-symbols-outlined">analytics</span>}
+        />
+        <MetricCard
+          label="Activas"
+          value={activeRules}
+          icon={<span className="material-symbols-outlined">check_circle</span>}
+          variant="success"
+        />
+        <div className="md:col-span-2 bg-surface-container-high border border-primary-fixed-dim/30 text-on-surface p-lg rounded-xl relative overflow-hidden flex flex-col justify-between shadow-[inset_0_0_20px_rgba(0,227,141,0.05)]">
+          <div className="relative z-10">
+            <h3 className="text-headline-lg font-bold mb-xs text-primary-fixed-dim">Prioridad de Procesamiento</h3>
+            <p className="text-body-lg text-on-surface-variant max-w-sm">Las reglas se ejecutan secuencialmente según su orden. Los patrones más específicos deben estar al inicio.</p>
+          </div>
+          <div className="absolute right-[-20px] bottom-[-20px] opacity-5">
+            <span className="material-symbols-outlined text-primary-fixed-dim" style={{ fontSize: '180px' }}>reorder</span>
+          </div>
+        </div>
+      </div>
 
       {!rules?.length ? (
         <EmptyState
           title="No hay reglas"
           description="Crea tu primera regla de despliegue para controlar el comportamiento de los archivos."
-          action={<Button onClick={openCreate} variant="primary"><Plus className="mr-2 h-4 w-4" /> Agregar Regla</Button>}
+          action={<Button onClick={openCreate}><span className="material-symbols-outlined text-[18px]">add_circle</span> Agregar Regla</Button>}
         />
       ) : (
-        <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-900">
+        <div className="bg-surface-container border border-outline-variant rounded-xl overflow-hidden shadow-sm animate-fade-in delay-200">
           <Table columns={columns} data={rules} keyExtractor={(r) => r.id} />
+          <div className="px-lg py-md bg-surface-container-high border-t border-outline-variant flex items-center justify-between">
+            <span className="text-label-code text-on-surface-variant">Mostrando {totalRules} reglas configuradas</span>
+          </div>
         </div>
       )}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-gutter animate-fade-in delay-300">
+        <div className="p-lg bg-surface-container border border-outline-variant rounded-xl flex gap-md hover:border-primary-fixed-dim/30 transition-colors">
+          <div className="w-12 h-12 bg-primary-fixed-dim/10 rounded-lg flex items-center justify-center shrink-0 border border-primary-fixed-dim/20">
+            <span className="material-symbols-outlined text-primary-fixed-dim">lightbulb</span>
+          </div>
+          <div>
+            <h4 className="text-title-md font-bold mb-xs">Tip de Operación</h4>
+            <p className="text-body-sm text-on-surface-variant">
+              Utiliza patrones de tipo Glob como <code className="font-mono text-primary-fixed-dim bg-surface-container-lowest px-1 rounded">**/*.dll</code> para afectar a archivos en subdirectorios de forma recursiva. Las reglas se evalúan de arriba hacia abajo.
+            </p>
+          </div>
+        </div>
+        <div className="p-lg bg-surface-container border border-outline-variant rounded-xl flex gap-md hover:border-secondary-container/30 transition-colors">
+          <div className="w-12 h-12 bg-secondary-container/10 rounded-lg flex items-center justify-center shrink-0 border border-secondary-container/20">
+            <span className="material-symbols-outlined text-secondary-container">history_edu</span>
+          </div>
+          <div>
+            <h4 className="text-title-md font-bold mb-xs">Registro de Cambios</h4>
+            <p className="text-body-sm text-on-surface-variant">
+              Las reglas se procesan secuencialmente. El orden determina la prioridad de aplicaci&oacute;n durante el despliegue.
+            </p>
+          </div>
+        </div>
+      </div>
 
       <Modal open={modalOpen} onClose={closeModal} title={editing ? 'Editar Regla' : 'Nueva Regla'} size="lg">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -180,16 +282,17 @@ export function RulesPage() {
             <Input id="destinationPath" label="Ruta Destino *" placeholder="ej. /backup/config/" error={errors.destinationPath?.message} {...register('destinationPath')} />
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1">
-              <label htmlFor="action" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Acción *</label>
-              <select id="action" className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-200" {...register('action')}>
-                {ACTIONS.map((a) => <option key={a.value} value={a.value}>{a.label}</option>)}
-              </select>
-              {errors.action && <p className="text-sm text-red-600 dark:text-red-400" role="alert">{errors.action.message}</p>}
-            </div>
+            <Select
+              id="action"
+              label="Acción *"
+              error={errors.action?.message}
+              {...register('action')}
+            >
+              {ACTIONS.map((a) => <option key={a.value} value={a.value}>{a.label}</option>)}
+            </Select>
             <Input id="order" label="Orden *" type="number" placeholder="ej. 1" error={errors.order?.message} {...register('order')} />
           </div>
-          <div className="flex justify-end gap-3 border-t border-gray-100 pt-4 dark:border-gray-700">
+          <div className="flex justify-end gap-sm border-t border-outline-variant pt-md">
             <Button type="button" variant="outline" onClick={closeModal}>Cancelar</Button>
             <Button type="submit" isLoading={createMutation.isPending || updateMutation.isPending}>
               {editing ? 'Actualizar Regla' : 'Crear Regla'}

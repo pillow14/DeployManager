@@ -1,5 +1,4 @@
 import { useEffect, useRef } from 'react'
-import { X } from 'lucide-react'
 import { cn } from '@/shared/utils/cn'
 import type { ReactNode } from 'react'
 
@@ -36,24 +35,24 @@ export function Modal({ open, onClose, title, children, size = 'md', className }
   return (
     <div
       ref={overlayRef}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-surface-container-lowest/80 p-4 backdrop-blur-md"
       onClick={(e) => { if (e.target === overlayRef.current) onClose() }}
       role="dialog"
       aria-modal="true"
       aria-label={title}
     >
-      <div className={cn('w-full rounded-xl bg-white shadow-xl dark:bg-gray-900', sizeClasses[size], className)}>
-        <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4 dark:border-gray-700">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{title}</h2>
+      <div className={cn('w-full rounded-xl bg-surface-container border border-outline-variant shadow-2xl', sizeClasses[size], className)}>
+        <div className="flex items-center justify-between border-b border-outline-variant px-lg py-md bg-surface-container-high rounded-t-xl">
+          <h2 className="text-title-md font-bold text-on-surface">{title}</h2>
           <button
             onClick={onClose}
-            className="rounded-md p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-800 dark:hover:text-gray-300"
+            className="w-8 h-8 flex items-center justify-center rounded-lg text-on-surface-variant transition-colors hover:bg-surface-container-highest hover:text-on-surface"
             aria-label="Close"
           >
-            <X className="h-5 w-5" />
+            <span className="material-symbols-outlined text-[20px]">close</span>
           </button>
         </div>
-        <div className="px-6 py-4">{children}</div>
+        <div className="px-lg py-md">{children}</div>
       </div>
     </div>
   )

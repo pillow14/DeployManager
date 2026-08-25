@@ -1,45 +1,27 @@
 import { useState } from 'react'
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom'
-import {
-  LayoutDashboard,
-  Globe,
-  Server,
-  GitBranch,
-  Package,
-  Upload,
-  Clock,
-  RotateCcw,
-  CalendarClock,
-  Settings,
-  Menu,
-  X,
-  LogOut,
-  ChevronDown,
-  Sun,
-  Moon,
-} from 'lucide-react'
+import { X, Menu } from 'lucide-react'
 import { cn } from '@/shared/utils/cn'
 import { useAuth } from '@/providers/useAuth'
-import { useTheme } from '@/shared/hooks/useTheme'
 
 interface NavItem {
-  icon: typeof LayoutDashboard
+  icon: string
   label: string
   path: string
   roles?: string[]
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
-  { icon: Globe, label: 'Entornos', path: '/environments' },
-  { icon: Server, label: 'Sitios', path: '/sites' },
-  { icon: GitBranch, label: 'Reglas', path: '/rules' },
-  { icon: Package, label: 'Paquetes', path: '/packages' },
-  { icon: Upload, label: 'Nuevo Despliegue', path: '/new-deploy' },
-  { icon: Clock, label: 'Historial', path: '/history' },
-  { icon: RotateCcw, label: 'Rollback', path: '/rollback' },
-  { icon: CalendarClock, label: 'Programados', path: '/scheduled-deploys' },
-  { icon: Settings, label: 'Configuración', path: '/settings' },
+  { icon: 'dashboard', label: 'Dashboard', path: '/dashboard' },
+  { icon: 'layers', label: 'Entornos', path: '/environments' },
+  { icon: 'language', label: 'Sitios', path: '/sites' },
+  { icon: 'rule', label: 'Reglas', path: '/rules' },
+  { icon: 'inventory_2', label: 'Paquetes', path: '/packages' },
+  { icon: 'rocket_launch', label: 'Nuevo Despliegue', path: '/new-deploy' },
+  { icon: 'history', label: 'Historial', path: '/history' },
+  { icon: 'settings_backup_restore', label: 'Rollback', path: '/rollback' },
+  { icon: 'calendar_month', label: 'Programados', path: '/scheduled-deploys' },
+  { icon: 'settings', label: 'Configuración', path: '/settings' },
 ]
 
 function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
@@ -47,26 +29,25 @@ function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
   const { user } = useAuth()
 
   return (
-    <nav className="mt-6 flex flex-1 flex-col gap-1 px-3">
+    <nav className="mt-md flex flex-1 flex-col gap-xs">
       {NAV_ITEMS.filter((item) => {
         if (!item.roles) return true
         return user && item.roles.includes(user.role)
       }).map((item) => {
         const isActive = location.pathname === item.path || location.pathname.startsWith(item.path + '/')
-        const Icon = item.icon
         return (
           <Link
             key={item.path}
             to={item.path}
             onClick={onNavigate}
             className={cn(
-              'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
+              'flex items-center gap-sm rounded-lg px-md py-sm text-body-sm font-medium transition-all duration-200',
               isActive
-                ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300'
-                : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200',
+                ? 'bg-primary-container/10 text-primary-container border border-primary-container/30 font-semibold'
+                : 'text-on-surface-variant hover:bg-surface-container-high hover:text-primary-container',
             )}
           >
-            <Icon className="h-5 w-5 shrink-0" />
+            <span className={cn('material-symbols-outlined text-[20px]', isActive && "font-variation-settings: 'FILL' 1;")}>{item.icon}</span>
             <span>{item.label}</span>
           </Link>
         )
@@ -81,7 +62,6 @@ export function MainLayout() {
   const navigate = useNavigate()
   const location = useLocation()
   const { user, logout } = useAuth()
-  const { theme, toggle } = useTheme()
 
   const handleLogout = async () => {
     await logout()
@@ -90,28 +70,33 @@ export function MainLayout() {
 
   const pageTitle = NAV_ITEMS.find((i) => location.pathname === i.path || location.pathname.startsWith(i.path + '/'))?.label ?? 'Dashboard'
 
+  const initials = user?.username ? user.username.slice(0, 2).toUpperCase() : 'US'
+
   return (
-    <div className="flex h-screen overflow-hidden bg-gray-50 dark:bg-gray-950">
+    <div className="flex h-screen overflow-hidden bg-background">
       {mobileOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/30 backdrop-blur-sm lg:hidden"
+          className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm lg:hidden"
           onClick={() => setMobileOpen(false)}
         />
       )}
 
       <aside
         className={cn(
-          'fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-gray-200 bg-white transition-transform duration-300 lg:static lg:translate-x-0 dark:border-gray-800 dark:bg-gray-900',
+          'fixed inset-y-0 left-0 z-50 flex w-[260px] flex-col border-r border-outline-variant bg-surface-container p-md transition-transform duration-300 lg:static lg:translate-x-0',
           mobileOpen ? 'translate-x-0' : '-translate-x-full',
         )}
       >
-        <div className="flex h-16 items-center gap-2.5 border-b border-gray-100 px-5 dark:border-gray-800">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600">
-            <Server className="h-4.5 w-4.5 text-white" />
+        <div className="flex items-center gap-sm px-sm py-md animate-fade-in">
+          <div className="flex h-8 w-8 items-center justify-center rounded bg-primary-container text-on-primary-container">
+            <span className="material-symbols-outlined text-[20px]">rocket_launch</span>
           </div>
-          <span className="text-lg font-bold text-gray-900 dark:text-white">DeployManager</span>
+          <div>
+            <h1 className="text-title-md font-bold text-on-surface leading-none">DeployManager</h1>
+            <p className="text-label-code text-outline">ASP.NET Operations</p>
+          </div>
           <button
-            className="ml-auto rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 lg:hidden dark:hover:bg-gray-800"
+            className="ml-auto rounded-lg p-1 text-on-surface-variant hover:bg-surface-container-high lg:hidden"
             onClick={() => setMobileOpen(false)}
           >
             <X className="h-5 w-5" />
@@ -120,86 +105,107 @@ export function MainLayout() {
 
         <SidebarNav onNavigate={() => setMobileOpen(false)} />
 
-        <div className="border-t border-gray-100 p-4 dark:border-gray-800">
-          <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-sm font-semibold text-blue-700 dark:bg-blue-900 dark:text-blue-300">
-              {user?.username?.charAt(0).toUpperCase()}
+        <div className="mt-auto border-t border-outline-variant pt-md">
+          <div className="flex items-center gap-sm px-sm py-sm">
+            <div className="h-8 w-8 rounded-full bg-primary-fixed-dim flex items-center justify-center text-on-primary-fixed-variant font-bold text-xs border border-primary-fixed-dim/30">
+              {initials}
             </div>
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium text-gray-900 dark:text-gray-200">{user?.username}</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">{user?.role}</p>
+              <p className="truncate text-body-sm font-semibold text-on-surface">{user?.username}</p>
+              <p className="text-label-code text-outline">{user?.role}</p>
             </div>
+            <button
+              onClick={handleLogout}
+              className="text-on-surface-variant hover:text-error transition-colors"
+              title="Cerrar sesión"
+            >
+              <span className="material-symbols-outlined text-[20px]">logout</span>
+            </button>
           </div>
         </div>
       </aside>
 
       <div className="flex flex-1 flex-col overflow-hidden">
-        <header className="flex h-16 shrink-0 items-center gap-4 border-b border-gray-200 bg-white px-4 sm:px-6 dark:border-gray-800 dark:bg-gray-900">
+        <header className="sticky top-0 z-40 flex h-16 shrink-0 items-center justify-between border-b border-outline-variant bg-surface-container-lowest/80 backdrop-blur-md px-lg">
           <button
-            className="rounded-md p-1.5 text-gray-500 hover:bg-gray-100 hover:text-gray-700 lg:hidden dark:hover:bg-gray-800"
+            className="rounded-lg p-1.5 text-on-surface-variant hover:bg-surface-container-high lg:hidden"
             onClick={() => setMobileOpen(true)}
           >
             <Menu className="h-5 w-5" />
           </button>
 
-          <div className="hidden sm:flex sm:items-center sm:gap-2">
-            <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Páginas /</span>
-            <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">{pageTitle}</span>
+          <div className="flex items-center gap-md w-1/2">
+            <div className="relative hidden sm:block w-full max-w-md">
+              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[20px]">search</span>
+              <input
+                className="w-full bg-surface-container-lowest border border-outline-variant rounded-lg py-2 pl-10 pr-4 text-body-sm text-on-surface placeholder:text-outline focus:outline-none focus:border-primary-container focus:ring-1 focus:ring-primary-container/50 transition-colors"
+                placeholder="Buscar sitios, despliegues..."
+                type="text"
+              />
+            </div>
           </div>
 
-          <div className="ml-auto flex items-center gap-4">
-            <button
-              onClick={toggle}
-              className="rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
-              title={theme === 'light' ? 'Modo oscuro' : 'Modo claro'}
-            >
-              {theme === 'light' ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
-            </button>
-
-            <div className="hidden items-center gap-2 sm:flex">
-              <span className="flex h-2 w-2 rounded-full bg-green-500" />
-              <span className="text-xs text-gray-500 dark:text-gray-400">Todo operativo</span>
+          <div className="flex items-center gap-lg">
+            <div className="hidden items-center gap-xs px-sm py-1 bg-secondary-container/10 border border-secondary-container/30 text-secondary-container rounded-full text-label-code font-bold sm:flex">
+              <span className="w-2 h-2 rounded-full bg-secondary-container animate-pulse" />
+              Producción
             </div>
 
-            <div className="relative">
-              <button
-                className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
-                onClick={() => setUserMenuOpen(!userMenuOpen)}
-              >
-                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-blue-100 text-xs font-semibold text-blue-700 dark:bg-blue-900 dark:text-blue-300">
-                  {user?.username?.charAt(0).toUpperCase()}
-                </div>
-                <span className="hidden md:inline">{user?.username}</span>
-                <ChevronDown className="h-4 w-4 text-gray-400" />
+            <div className="flex items-center gap-md">
+              <button className="text-on-surface-variant hover:text-primary-container transition-colors">
+                <span className="material-symbols-outlined">notifications</span>
               </button>
 
-              {userMenuOpen && (
-                <>
-                  <div className="fixed inset-0 z-10" onClick={() => setUserMenuOpen(false)} />
-                  <div className="absolute right-0 z-20 mt-1 w-48 rounded-lg border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-gray-800">
-                    <div className="border-b border-gray-100 px-4 py-2 dark:border-gray-700">
-                      <p className="text-sm font-medium text-gray-900 dark:text-gray-200">{user?.username}</p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">{user?.role}</p>
-                    </div>
-                    <button
-                      onClick={() => { handleLogout(); setUserMenuOpen(false) }}
-                      className="flex w-full items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/30"
-                    >
-                      <LogOut className="h-4 w-4" />
-                      Cerrar sesión
-                    </button>
+              <div className="relative">
+                <button
+                  className="flex items-center gap-sm rounded-lg p-1 text-on-surface-variant hover:bg-surface-container transition-colors"
+                  onClick={() => setUserMenuOpen(!userMenuOpen)}
+                >
+                  <div className="h-8 w-8 rounded-full bg-primary-fixed-dim flex items-center justify-center text-on-primary-fixed-variant font-bold text-xs overflow-hidden border border-primary-fixed-dim/30">
+                    {initials}
                   </div>
-                </>
-              )}
+                  <span className="hidden md:inline text-label-code font-semibold text-on-surface">{user?.username}</span>
+                  <span className="material-symbols-outlined text-outline text-[18px]">expand_more</span>
+                </button>
+
+                {userMenuOpen && (
+                  <>
+                    <div className="fixed inset-0 z-10" onClick={() => setUserMenuOpen(false)} />
+                    <div className="absolute right-0 z-20 mt-2 w-56 rounded-xl border border-outline-variant bg-surface-container-high py-1 shadow-lg">
+                      <div className="border-b border-outline-variant px-4 py-3">
+                        <p className="text-body-sm font-semibold text-on-surface">{user?.username}</p>
+                        <p className="text-label-code text-outline">{user?.role}</p>
+                      </div>
+                      <button
+                        onClick={() => { handleLogout(); setUserMenuOpen(false) }}
+                        className="flex w-full items-center gap-2 px-4 py-2.5 text-body-sm text-error hover:bg-error/10 transition-colors"
+                      >
+                        <span className="material-symbols-outlined text-[18px]">logout</span>
+                        Cerrar sesión
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
           </div>
         </header>
 
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
-          <div className="mx-auto max-w-7xl">
+        <main className="flex-1 overflow-y-auto p-lg">
+          <div className="mx-auto max-w-[1440px]">
             <Outlet />
           </div>
         </main>
+
+        <footer className="px-lg py-3 border-t border-outline-variant bg-surface-container flex items-center justify-between text-label-code text-outline">
+          <div className="flex items-center gap-md">
+            <div className="flex items-center gap-xs">
+              <span className="w-2 h-2 rounded-full bg-primary-container shadow-[0_0_5px_rgba(0,255,159,0.8)]" />
+              Sistemas operativos
+            </div>
+          </div>
+          <span>{pageTitle} &middot; DeployManager</span>
+        </footer>
       </div>
     </div>
   )

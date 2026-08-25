@@ -6,13 +6,13 @@ interface SkeletonProps {
 
 export function Skeleton({ className }: SkeletonProps) {
   return (
-    <div className={cn('animate-pulse rounded-md bg-gray-200', className)} />
+    <div className={cn('animate-pulse rounded bg-surface-container-high', className)} />
   )
 }
 
 export function CardSkeleton() {
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+    <div className="bg-surface-container border border-outline-variant p-lg rounded-xl shadow-sm">
       <Skeleton className="mb-3 h-4 w-24" />
       <Skeleton className="h-8 w-16" />
     </div>
@@ -21,16 +21,16 @@ export function CardSkeleton() {
 
 export function TableSkeleton({ rows = 5 }: { rows?: number }) {
   return (
-    <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
-      <div className="border-b border-gray-100 bg-gray-50 p-4">
+    <div className="bg-surface-container border border-outline-variant rounded-xl overflow-hidden shadow-sm">
+      <div className="border-b border-outline-variant bg-surface-container-high p-lg">
         <Skeleton className="h-4 w-32" />
       </div>
       {Array.from({ length: rows }).map((_, i) => (
-        <div key={i} className="flex items-center gap-4 border-b border-gray-100 p-4 last:border-0">
+        <div key={i} className="flex items-center gap-4 border-b border-outline-variant px-lg py-md last:border-0">
           <Skeleton className="h-4 flex-1" />
           <Skeleton className="h-4 w-20" />
           <Skeleton className="h-4 w-16" />
-          <Skeleton className="h-8 w-24 rounded-md" />
+          <Skeleton className="h-8 w-24 rounded" />
         </div>
       ))}
     </div>

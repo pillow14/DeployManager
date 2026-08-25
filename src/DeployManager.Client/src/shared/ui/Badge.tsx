@@ -8,26 +8,26 @@ interface BadgeProps {
 }
 
 const variants = {
-  default: 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300',
-  success: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-  warning: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
-  danger: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
-  info: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-  purple: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
+  default: 'bg-surface-container-high text-on-surface-variant border border-outline-variant',
+  success: 'bg-primary-container/10 text-primary-container border border-primary-container/30',
+  warning: 'bg-secondary-container/10 text-secondary-container border border-secondary-container/30',
+  danger: 'bg-error/10 text-error border border-error/30',
+  info: 'bg-secondary-container/10 text-secondary-container border border-secondary-container/30',
+  purple: 'bg-tertiary-container/10 text-tertiary-container border border-tertiary-container/30',
 }
 
 const dotColors = {
-  default: 'bg-gray-500',
-  success: 'bg-green-500',
-  warning: 'bg-yellow-500',
-  danger: 'bg-red-500',
-  info: 'bg-blue-500',
-  purple: 'bg-purple-500',
+  default: 'bg-outline',
+  success: 'bg-primary-container',
+  warning: 'bg-secondary-container',
+  danger: 'bg-error',
+  info: 'bg-secondary-container',
+  purple: 'bg-tertiary-container',
 }
 
 export function Badge({ variant = 'default', dot, children, className }: BadgeProps) {
   return (
-    <span className={cn('inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium', variants[variant], className)}>
+    <span className={cn('inline-flex items-center gap-1.5 rounded px-sm py-1 text-label-code font-bold', variants[variant], className)}>
       {dot && <span className={cn('h-1.5 w-1.5 rounded-full', dotColors[variant])} />}
       {children}
     </span>

@@ -1,2 +1,506 @@
 @import "tailwindcss";
 @custom-variant dark (&:where(.dark, .dark *));
+
+/* ────────────────────────────────────────────
+   Material Design 3 — Ninja Edition Theme
+   ──────────────────────────────────────────── */
+@theme {
+  --font-sans: 'Geist', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --font-display: 'Geist', system-ui, sans-serif;
+
+  /* M3 Surface palette */
+  --color-background: #111417;
+  --color-surface: #111417;
+  --color-surface-dim: #111417;
+  --color-surface-container-lowest: #0b0e11;
+  --color-surface-container-low: #191c1f;
+  --color-surface-container: #1d2023;
+  --color-surface-container-high: #272a2e;
+  --color-surface-container-highest: #323538;
+  --color-surface-bright: #37393d;
+  --color-surface-variant: #323538;
+
+  /* M3 Primary — green accent */
+  --color-primary: #f4fff4;
+  --color-primary-container: #00ff9f;
+  --color-on-primary: #00391f;
+  --color-on-primary-container: #007144;
+  --color-primary-fixed: #55ffa9;
+  --color-primary-fixed-dim: #00e38d;
+
+  /* M3 Secondary — cyan accent */
+  --color-secondary: #bdf4ff;
+  --color-secondary-container: #00e3fd;
+  --color-on-secondary: #00363d;
+  --color-on-secondary-container: #00616d;
+  --color-secondary-fixed: #9cf0ff;
+  --color-secondary-fixed-dim: #00daf3;
+
+  /* M3 Tertiary — purple accent */
+  --color-tertiary: #fffaff;
+  --color-tertiary-container: #e7d9ff;
+  --color-on-tertiary: #3c0090;
+  --color-on-tertiary-container: #7623ff;
+  --color-tertiary-fixed: #e9ddff;
+  --color-tertiary-fixed-dim: #d1bcff;
+
+  /* M3 Error */
+  --color-error: #ffb4ab;
+  --color-error-container: #93000a;
+  --color-on-error: #690005;
+  --color-on-error-container: #ffdad6;
+
+  /* M3 Text / Outline */
+  --color-on-surface: #e1e2e7;
+  --color-on-surface-variant: #b9cbbc;
+  --color-on-background: #e1e2e7;
+  --color-outline: #849587;
+  --color-outline-variant: #3a4a3f;
+
+  /* M3 Inverse */
+  --color-inverse-surface: #e1e2e7;
+  --color-inverse-primary: #006d41;
+  --color-inverse-on-surface: #2e3134;
+
+  /* Spacing */
+  --spacing-xs: 8px;
+  --spacing-sm: 16px;
+  --spacing-md: 24px;
+  --spacing-lg: 40px;
+  --spacing-xl: 64px;
+  --spacing-gutter: 20px;
+}
+
+/* ────────────────────────────────────────────
+   Global Styles
+   ──────────────────────────────────────────── */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background-color: #111417;
+  color: #e1e2e7;
+  font-family: 'Geist', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Material Symbols Outlined */
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  display: inline-block;
+  vertical-align: middle;
+  font-family: 'Material Symbols Outlined';
+  font-style: normal;
+  line-height: 1;
+  text-rendering: optimizeLegibility;
+}
+
+/* ────────────────────────────────────────────
+   Fade-in animations
+   ──────────────────────────────────────────── */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s ease-out forwards;
+}
+
+.delay-100 { animation-delay: 100ms; }
+.delay-200 { animation-delay: 200ms; }
+.delay-300 { animation-delay: 300ms; }
+.delay-400 { animation-delay: 400ms; }
+
+/* ────────────────────────────────────────────
+   Login Shell (preserved from previous design)
+   ──────────────────────────────────────────── */
+.login-shell {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: #0b1220;
+  overflow: hidden;
+  font-family: 'Geist', system-ui, -apple-system, sans-serif;
+}
+
+.login-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(56, 189, 248, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(56, 189, 248, 0.03) 1px, transparent 1px);
+  background-size: 60px 60px;
+  mask-image: radial-gradient(ellipse at center, black 30%, transparent 70%);
+  -webkit-mask-image: radial-gradient(ellipse at center, black 30%, transparent 70%);
+  pointer-events: none;
+}
+
+.login-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.25;
+  pointer-events: none;
+  animation: orb-float 20s ease-in-out infinite alternate;
+}
+.login-orb.o1 {
+  width: 400px; height: 400px;
+  background: radial-gradient(circle, #00ff9f, transparent 70%);
+  top: -10%; left: -5%;
+  animation-duration: 25s;
+}
+.login-orb.o2 {
+  width: 350px; height: 350px;
+  background: radial-gradient(circle, #00e3fd, transparent 70%);
+  bottom: -15%; right: -5%;
+  animation-duration: 30s;
+  animation-delay: 5s;
+}
+.login-orb.o3 {
+  width: 250px; height: 250px;
+  background: radial-gradient(circle, #7623ff, transparent 70%);
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  animation-duration: 35s;
+  animation-delay: 10s;
+}
+@keyframes orb-float {
+  0%   { transform: translate(0, 0) scale(1); }
+  33%  { transform: translate(30px, -20px) scale(1.05); }
+  66%  { transform: translate(-20px, 30px) scale(0.95); }
+  100% { transform: translate(10px, -10px) scale(1.02); }
+}
+
+.login-beam {
+  position: absolute;
+  top: 0;
+  width: 1px;
+  height: 100%;
+  background: linear-gradient(to bottom, transparent, rgba(0, 255, 159, 0.08), transparent);
+  animation: beam-pulse 8s ease-in-out infinite;
+  pointer-events: none;
+}
+.login-beam.b2 { animation-delay: 2s; animation-duration: 10s; }
+.login-beam.b3 { animation-delay: 4s; animation-duration: 7s; }
+.login-beam.b4 { animation-delay: 6s; animation-duration: 9s; }
+@keyframes beam-pulse {
+  0%, 100% { opacity: 0.3; }
+  50%      { opacity: 0.8; }
+}
+
+.login-particles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.pp {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0;
+  animation: particle-drift linear infinite;
+}
+.pp.g {
+  background: rgba(0, 255, 159, 0.6);
+  box-shadow: 0 0 8px rgba(0, 255, 159, 0.4);
+}
+.pp.b {
+  background: rgba(0, 227, 253, 0.6);
+  box-shadow: 0 0 8px rgba(0, 227, 253, 0.4);
+}
+.pp.w {
+  background: rgba(255, 255, 255, 0.4);
+  box-shadow: 0 0 6px rgba(255, 255, 255, 0.3);
+}
+@keyframes particle-drift {
+  0%   { opacity: 0; transform: translateY(0) translateX(0); }
+  10%  { opacity: 0.7; }
+  50%  { opacity: 0.4; }
+  90%  { opacity: 0.6; }
+  100% { opacity: 0; transform: translateY(-120px) translateX(20px); }
+}
+
+.login-side {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  max-width: 440px;
+  padding: 3rem;
+  color: #e1e2e7;
+  position: relative;
+  z-index: 2;
+}
+@media (min-width: 1024px) {
+  .login-side { display: flex; }
+}
+.login-side h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #f1f5f9;
+  margin-bottom: 0.75rem;
+}
+.login-side p {
+  font-size: 0.875rem;
+  color: #849587;
+  line-height: 1.6;
+}
+
+.login-hero-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+}
+.login-hero-brand h1 {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #f1f5f9;
+  margin: 0;
+  line-height: 1.2;
+}
+.login-hero-brand .accent {
+  background: linear-gradient(135deg, #00ff9f, #00e3fd);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.login-hero-brand .tagline {
+  font-size: 0.75rem;
+  color: #849587;
+  letter-spacing: 0.05em;
+}
+
+.brand-mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+.brand-mark--hero {
+  width: 48px;
+  height: 48px;
+}
+.brand-mark--nav {
+  width: 36px;
+  height: 36px;
+}
+.brand-spec {
+  position: absolute;
+  inset: -4px;
+  border-radius: 14px;
+  border: 1px solid rgba(0, 255, 159, 0.2);
+  animation: brand-pulse 3s ease-in-out infinite;
+}
+@keyframes brand-pulse {
+  0%, 100% { opacity: 0.3; transform: scale(1); }
+  50%      { opacity: 0.6; transform: scale(1.05); }
+}
+
+.login-stats {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+.login-stat {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  padding: 0.75rem;
+  text-align: center;
+}
+.login-stat .value {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #00ff9f;
+}
+.login-stat .label {
+  font-size: 0.65rem;
+  color: #849587;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.login-card {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 420px;
+  padding: 2rem;
+  margin: 1rem;
+  background: rgba(29, 32, 35, 0.7);
+  border: 1px solid rgba(58, 74, 63, 0.3);
+  border-radius: 16px;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.03),
+    0 25px 50px -12px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.field {
+  position: relative;
+  margin-bottom: 0.75rem;
+}
+.field input {
+  width: 100%;
+  padding: 0.875rem 2.5rem 0.5rem 0.75rem;
+  background: rgba(29, 32, 35, 0.8);
+  border: 1px solid rgba(58, 74, 63, 0.4);
+  border-radius: 10px;
+  color: #e1e2e7;
+  font-size: 0.875rem;
+  outline: none;
+  transition: all 0.2s ease;
+}
+.field input:focus {
+  border-color: rgba(0, 255, 159, 0.5);
+  box-shadow: 0 0 0 3px rgba(0, 255, 159, 0.1);
+  background: rgba(29, 32, 35, 1);
+}
+.field input::placeholder {
+  color: transparent;
+}
+.field .icon {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 18px;
+  height: 18px;
+  color: #849587;
+  transition: color 0.2s;
+  pointer-events: none;
+}
+.field input:focus ~ .icon {
+  color: #00ff9f;
+}
+.field .label-float {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.875rem;
+  color: #849587;
+  pointer-events: none;
+  transition: all 0.2s ease;
+  transform-origin: left center;
+}
+.field input:focus ~ .label-float,
+.field input:not(:placeholder-shown) ~ .label-float {
+  top: 0.55rem;
+  transform: translateY(0) scale(0.7);
+  color: #00ff9f;
+  letter-spacing: 0.03em;
+}
+.field input[aria-invalid="true"] {
+  border-color: rgba(255, 180, 171, 0.5);
+}
+
+.login-btn {
+  width: 100%;
+  padding: 0.75rem 1.5rem;
+  margin-top: 0.5rem;
+  background: linear-gradient(135deg, #00ff9f, #00e3fd);
+  color: #00391f;
+  font-weight: 600;
+  font-size: 0.875rem;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  position: relative;
+  overflow: hidden;
+}
+.login-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, #00e38d, #00daf3);
+  opacity: 0;
+  transition: opacity 0.25s;
+}
+.login-btn:hover::before {
+  opacity: 1;
+}
+.login-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.login-btn span {
+  position: relative;
+  z-index: 1;
+}
+.login-btn .spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(0, 57, 31, 0.3);
+  border-top-color: #00391f;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.login-footer {
+  position: absolute;
+  bottom: 1.5rem;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 0.7rem;
+  color: #849587;
+  z-index: 2;
+}
+
+/* ────────────────────────────────────────────
+   Checkbox
+   ──────────────────────────────────────────── */
+.dm-checkbox-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  border: 1.5px solid var(--color-outline-variant, #3a4a3f);
+  background: var(--color-surface-container-lowest, #111417);
+  transition: all 0.2s ease;
+}
+.dm-checkbox-box svg {
+  opacity: 0;
+  transform: scale(0.5);
+  transition: all 0.15s ease;
+}
+.peer:checked ~ .dm-checkbox-box {
+  background: var(--color-primary-container, #00ff9f);
+  border-color: var(--color-primary-container, #00ff9f);
+}
+.peer:checked ~ .dm-checkbox-box svg {
+  opacity: 1;
+  transform: scale(1);
+}
+.peer:focus-visible ~ .dm-checkbox-box {
+  box-shadow: 0 0 0 2px var(--color-primary-container, #00ff9f), 0 0 0 4px rgba(0, 255, 159, 0.15);
+}
+.group:hover .dm-checkbox-box {
+  border-color: var(--color-outline, #849587);
+}
+
+/* ────────────────────────────────────────────
+   Responsive
+   ──────────────────────────────────────────── */
+@media (max-width: 1023px) {
+  .login-card {
+    max-width: 400px;
+  }
+}

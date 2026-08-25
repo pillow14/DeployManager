@@ -1,13 +1,14 @@
 import { forwardRef } from 'react'
 import { cn } from '@/shared/utils/cn'
-import type { InputHTMLAttributes } from 'react'
+import type { ReactNode } from 'react'
+import type { TextareaHTMLAttributes } from 'react'
 
-interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
-  label?: string
+interface TextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
+  label?: ReactNode
   error?: string
 }
 
-export const Input = forwardRef<HTMLInputElement, InputProps>(
+export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
   ({ className, label, error, id, ...props }, ref) => {
     const errorId = id ? `${id}-error` : undefined
 
@@ -18,11 +19,11 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             {label}
           </label>
         )}
-        <input
+        <textarea
           ref={ref}
           id={id}
           className={cn(
-            'block w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-md py-sm text-body-sm text-on-surface placeholder:text-outline focus:outline-none focus:border-primary-container focus:ring-1 focus:ring-primary-container/50 transition-colors',
+            'block w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-md py-sm text-body-sm text-on-surface placeholder:text-outline focus:outline-none focus:border-primary-container focus:ring-1 focus:ring-primary-container/50 transition-colors resize-y',
             error && 'border-error focus:border-error focus:ring-error/50',
             className,
           )}
@@ -40,4 +41,4 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
   },
 )
 
-Input.displayName = 'Input'
+Textarea.displayName = 'Textarea'

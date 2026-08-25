@@ -9,12 +9,12 @@ interface PageHeaderProps {
 
 export function PageHeader({ title, description, actions, border = true }: PageHeaderProps) {
   return (
-    <div className={`flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between ${border ? 'border-b border-gray-200 pb-5 dark:border-gray-700' : ''}`}>
+    <div className={`flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between ${border ? 'border-b border-outline-variant pb-lg mb-lg' : 'mb-xl'}`}>
       <div className="min-w-0 flex-1">
-        <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100 sm:text-2xl">{title}</h1>
-        {description && <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{description}</p>}
+        <h2 className="text-headline-lg text-on-surface tracking-tight">{title}</h2>
+        {description && <p className="mt-xs text-body-lg text-on-surface-variant">{description}</p>}
       </div>
-      {actions && <div className="flex shrink-0 items-center gap-3">{actions}</div>}
+      {actions && <div className="flex shrink-0 items-center gap-sm">{actions}</div>}
     </div>
   )
 }

@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -7,8 +8,8 @@ import { flushSync } from 'react-dom'
 import Swal from 'sweetalert2'
 import { useLogin } from '@/shared/hooks/useAuth'
 import { useAuth } from '@/providers/useAuth'
-import { Button } from '@/shared/components/Button'
 import { Input } from '@/shared/components/Input'
+import { Button } from '@/shared/components/Button'
 
 const loginSchema = z.object({
   username: z.string().min(1, 'El usuario es obligatorio'),
@@ -21,6 +22,7 @@ export function LoginPage() {
   const navigate = useNavigate()
   const loginMutation = useLogin()
   const { login } = useAuth()
+  const [showPassword, setShowPassword] = useState(false)
 
   const {
     register,
@@ -65,22 +67,47 @@ export function LoginPage() {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       <Input
-        id="username"
+        id="login-username"
         label="Usuario"
         placeholder="Ingrese su usuario"
+        autoComplete="username"
         error={errors.username?.message}
         {...register('username')}
       />
-      <Input
-        id="password"
-        label="Contraseña"
-        type="password"
-        placeholder="Ingrese su contraseña"
-        error={errors.password?.message}
-        {...register('password')}
-      />
-      <Button type="submit" className="w-full dark:text-white" isLoading={loginMutation.isPending}>
-        {loginMutation.isPending ? 'Ingresando...' : 'Iniciar Sesión'}
+
+      <div className="relative">
+        <Input
+          id="login-password"
+          label="Contraseña"
+          type={showPassword ? 'text' : 'password'}
+          placeholder="Ingrese su contraseña"
+          autoComplete="current-password"
+          error={errors.password?.message}
+          {...register('password')}
+        />
+        <button
+          type="button"
+          onClick={() => setShowPassword(!showPassword)}
+          className="absolute right-3 top-[38px] text-outline hover:text-primary-container transition-colors"
+          tabIndex={-1}
+          title="Mostrar/ocultar contraseña"
+        >
+          <span className="material-symbols-outlined text-[20px]">
+            {showPassword ? 'visibility_off' : 'visibility'}
+          </span>
+        </button>
+      </div>
+
+      <Button
+        type="submit"
+        isLoading={loginMutation.isPending}
+        className="w-full mt-2"
+        size="lg"
+      >
+        {!loginMutation.isPending && (
+          <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
+        )}
+        {loginMutation.isPending ? 'Autenticando...' : 'Ingresar'}
       </Button>
     </form>
   )
